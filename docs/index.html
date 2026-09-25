@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEP Social Intelligence — South Africa Local Election Candidates</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- sql.js WebAssembly for in-browser SQLite queries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js"></script>
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #111726;
+      --surface-border: #1f293d;
+      --surface-hover: #182238;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.2);
+      --accent: #6366f1;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      border-bottom: 1px solid var(--surface-border);
+      background: rgba(17, 23, 38, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      font-size: 19px;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: var(--primary);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-left: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover {
+      background: var(--surface-hover);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .nav-btn.primary {
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      border-color: transparent;
+      color: #fff;
+    }
+    .nav-btn.primary:hover {
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+
+    main {
+      padding: 32px;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .controls-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrap {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 12px 16px 12px 42px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+
+    .select-filter {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+      min-width: 150px;
+    }
+    .select-filter:focus {
+      border-color: var(--primary);
+    }
+
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 16px 20px;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--surface-border);
+    }
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+    tbody tr {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    tbody tr:hover {
+      background: var(--surface-hover);
+    }
+
+    .badge-id {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--primary);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+    .badge-confidence {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .badge-confidence.high { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-confidence.medium { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-confidence.low { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* Pagination controls */
+    .pagination-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-top: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .page-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .page-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: var(--surface-hover);
+    }
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Detail Drawer */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: none;
+      justify-content: flex-end;
+    }
+    .drawer-overlay.active { display: flex; }
+
+    .drawer {
+      background: var(--surface);
+      width: 100%;
+      max-width: 650px;
+      height: 100%;
+      border-left: 1px solid var(--surface-border);
+      padding: 32px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+      animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 16px;
+    }
+    .drawer-title { font-size: 20px; font-weight: 700; color: #fff; }
+    .drawer-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .close-btn:hover { color: #fff; }
+
+    .account-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .account-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .platform-name {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+    }
+
+    .score-meter-wrap { margin-top: 2px; }
+    .score-bar-bg {
+      background: rgba(255, 255, 255, 0.08);
+      height: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+    .score-bar-fill.high { background: #10b981; }
+    .score-bar-fill.medium { background: #f59e0b; }
+    .score-bar-fill.low { background: #ef4444; }
+
+    .url-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .account-url {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #38bdf8;
+      word-break: break-all;
+      text-decoration: none;
+      flex: 1;
+    }
+    .account-url:hover { text-decoration: underline; }
+
+    .copy-btn {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .copy-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+    }
+    .copy-btn.copied {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .criteria-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .criteria-title {
+      font-weight: 600;
+      color: #cbd5e1;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .criteria-item {
+      display: flex;
+      justify-content: space-between;
+      color: #94a3b8;
+    }
+    .criteria-value {
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+
+    .rationale {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #cbd5e1;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px 12px;
+      border-radius: 6px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .signals-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .signal-chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    pre.popolo-json {
+      background: #060911;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--surface-border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #38bdf8;
+      overflow-x: auto;
+      max-height: 250px;
+    }
+
+    /* Modal for SQL Console */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 850px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .sql-input {
+      width: 100%;
+      height: 100px;
+      background: #060911;
+      border: 1px solid var(--surface-border);
+      color: #38bdf8;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 8px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .sql-results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      margin-top: 16px;
+    }
+    .sql-results-table th, .sql-results-table td {
+      border: 1px solid var(--surface-border);
+      padding: 8px 12px;
+    }
+    .sql-results-table th { background: rgba(255,255,255,0.05); color: #fff; }
+
+    footer {
+      border-top: 1px solid var(--surface-border);
+      padding: 20px 32px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo-badge">ZA</div>
+      <div>
+        <h1>PEP Social Intelligence Dashboard <span>Popolo Static Edition</span></h1>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <a href="methodology.html" class="nav-btn">📖 Methodology & Limitations</a>
+      <button class="nav-btn" onclick="openSqlModal()">⚡ SQL Query Console</button>
+      <a href="data/peps.db" download class="nav-btn primary">💾 Download SQLite (peps.db)</a>
+      <a href="data/popolo_sa_candidates.json" download class="nav-btn">📥 Popolo JSON</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Total Candidates</span>
+        <span class="stat-value" id="statPersons">-</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Social Accounts Found</span>
+        <span class="stat-value" style="color: var(--primary);" id="statAccounts">-</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">High Confidence Matches</span>
+        <span class="stat-value" style="color: var(--success);" id="statHighConf">-</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Platforms Covered</span>
+        <span class="stat-value" style="color: #a78bfa;" id="statPlatforms">-</span>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by Candidate Name, pers_xxx ID, Party, or District...">
+      </div>
+      <select id="platformFilter" class="select-filter">
+        <option value="">All Platforms</option>
+        <option value="facebook">Facebook</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="twitter">Twitter / X</option>
+        <option value="instagram">Instagram</option>
+        <option value="youtube">YouTube</option>
+        <option value="tiktok">TikTok</option>
+        <option value="social_web">Candidate Web</option>
+      </select>
+      <select id="confidenceFilter" class="select-filter">
+        <option value="">All Confidence</option>
+        <option value="HIGH">High (>= 0.70)</option>
+        <option value="MEDIUM">Medium (0.40 - 0.69)</option>
+        <option value="LOW">Low (< 0.40)</option>
+      </select>
+      <select id="partyFilter" class="select-filter">
+        <option value="">All Political Parties</option>
+      </select>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Candidate ID</th>
+            <th>Full Name</th>
+            <th>Party</th>
+            <th>District / Municipality</th>
+            <th>Accounts Found</th>
+            <th>Max Confidence</th>
+          </tr>
+        </thead>
+        <tbody id="candidatesTableBody">
+          <tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-muted);">Loading candidates index...</td></tr>
+        </tbody>
+      </table>
+      <div class="pagination-wrap">
+        <div id="paginationSummary">Showing 0 of 0 candidates</div>
+        <div class="pagination-btns">
+          <button class="page-btn" id="prevPageBtn" onclick="changePage(-1)">← Previous</button>
+          <button class="page-btn" id="nextPageBtn" onclick="changePage(1)">Next →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Detail Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer(event)">
+    <div class="drawer" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <div>
+          <div class="drawer-title" id="drawerName">-</div>
+          <div class="drawer-subtitle" id="drawerMeta">-</div>
+        </div>
+        <button class="close-btn" onclick="closeDrawer()">&times;</button>
+      </div>
+      <div class="drawer-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Discovered Social Accounts</h4>
+          <button class="copy-btn" id="copyAllBtn" onclick="copyAllAccountUrls()" style="display: none;">📋 Copy All URLs</button>
+        </div>
+        <div id="drawerAccountsList"></div>
+
+        <h4 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-top: 24px; margin-bottom: 8px; letter-spacing: 0.05em;">Popolo JSON Specification</h4>
+        <pre class="popolo-json" id="drawerPopoloJson"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQL WebAssembly Modal -->
+  <div class="modal-overlay" id="sqlModalOverlay" onclick="closeSqlModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>⚡ In-Browser SQLite WebAssembly Query Console</h3>
+        <button class="close-btn" onclick="closeSqlModal()">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+        Query the bundled <code>peps.db</code> SQLite database directly inside your browser using WebAssembly.
+      </p>
+      <textarea id="sqlQueryInput" class="sql-input">SELECT platform, count(*) as count FROM social_accounts GROUP BY platform ORDER BY count DESC;</textarea>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="nav-btn primary" id="runSqlBtn" onclick="executeSql()">▶ Run Query</button>
+        <span id="sqlStatus" style="font-size: 12px; color: var(--text-muted);"></span>
+      </div>
+      <div id="sqlOutputWrap" style="overflow-x: auto; margin-top: 16px;"></div>
+    </div>
+  </div>
+
+  <footer>
+    PEP Social Media Discovery & Popolo Intelligence System • Standalone Static Distribution • <a href="methodology.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Methodology & Limitations Explainer →</a>
+  </footer>
+
+  <script>
+    let allCandidates = [];
+    let filteredCandidates = [];
+    let currentPage = 1;
+    const pageSize = 50;
+    let sqlDb = null;
+
+    async function init() {
+      try {
+        // Load stats
+        const statsRes = await fetch('data/stats.json');
+        const stats = await statsRes.json();
+        document.getElementById('statPersons').innerText = stats.total_persons.toLocaleString();
+        document.getElementById('statAccounts').innerText = stats.total_accounts.toLocaleString();
+        document.getElementById('statHighConf').innerText = (stats.confidence_levels.HIGH || 0).toLocaleString();
+        document.getElementById('statPlatforms').innerText = Object.keys(stats.platforms).length;
+
+        // Populate party filter
+        const partySelect = document.getElementById('partyFilter');
+        if (stats.parties) {
+          stats.parties.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p;
+            opt.innerText = p;
+            partySelect.appendChild(opt);
+          });
+        }
+
+        // Load candidates
+        const candRes = await fetch('data/candidates.json');
+        allCandidates = await candRes.json();
+        filterCandidates();
+      } catch (err) {
+        console.error("Failed to load static datasets:", err);
+        document.getElementById('candidatesTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--danger);">Failed to load candidate dataset. Ensure 'data/candidates.json' exists.</td></tr>`;
+      }
+    }
+
+    function filterCandidates() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const platform = document.getElementById('platformFilter').value.toLowerCase();
+      const confidence = document.getElementById('confidenceFilter').value.toUpperCase();
+      const party = document.getElementById('partyFilter').value;
+
+      filteredCandidates = allCandidates.filter(c => {
+        // Query match
+        if (q) {
+          const matchQ = (c.name && c.name.toLowerCase().includes(q)) ||
+                         (c.id && c.id.toLowerCase().includes(q)) ||
+                         (c.party_name && c.party_name.toLowerCase().includes(q)) ||
+                         (c.district && c.district.toLowerCase().includes(q));
+          if (!matchQ) return false;
+        }
+
+        // Platform match
+        if (platform) {
+          const hasPlatform = c.social_accounts && c.social_accounts.some(a => a.platform.toLowerCase() === platform);
+          if (!hasPlatform) return false;
+        }
+
+        // Confidence match
+        if (confidence) {
+          const hasConf = c.social_accounts && c.social_accounts.some(a => a.confidence_level === confidence);
+          if (!hasConf) return false;
+        }
+
+        // Party match
+        if (party && c.party_name !== party) {
+          return false;
+        }
+
+        return true;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('candidatesTableBody');
+      const total = filteredCandidates.length;
+      
+      if (total === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-muted);">No matching candidates found.</td></tr>`;
+        document.getElementById('paginationSummary').innerText = `Showing 0 of 0 candidates`;
+        document.getElementById('prevPageBtn').disabled = true;
+        document.getElementById('nextPageBtn').disabled = true;
+        return;
+      }
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = Math.min(startIdx + pageSize, total);
+      const pageSlice = filteredCandidates.slice(startIdx, endIdx);
+
+      tbody.innerHTML = pageSlice.map(c => {
+        const maxConf = c.max_confidence ? Math.round(c.max_confidence * 100) + '%' : 'N/A';
+        const confClass = c.max_confidence >= 0.70 ? 'high' : (c.max_confidence >= 0.40 ? 'medium' : 'low');
+        return `
+          <tr onclick="openCandidateDetail('${c.id}')">
+            <td><span class="badge-id">${c.id}</span></td>
+            <td style="font-weight: 600;">${c.name}</td>
+            <td style="color: var(--text-muted);">${c.party_name || '-'}</td>
+            <td style="color: var(--text-muted);">${c.district || '-'}</td>
+            <td><span style="font-weight: 600; color: var(--primary);">${c.account_count}</span></td>
+            <td><span class="badge-confidence ${confClass}">${maxConf}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('paginationSummary').innerText = `Showing ${startIdx + 1}–${endIdx} of ${total.toLocaleString()} candidates`;
+      document.getElementById('prevPageBtn').disabled = (currentPage === 1);
+      document.getElementById('nextPageBtn').disabled = (endIdx >= total);
+    }
+
+    function changePage(delta) {
+      currentPage += delta;
+      renderTable();
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+
+    function openCandidateDetail(persId) {
+      const candidate = allCandidates.find(c => c.id === persId);
+      if (!candidate) return;
+
+      document.getElementById('drawerName').innerText = candidate.name;
+      document.getElementById('drawerMeta').innerText = `${candidate.id} • ${candidate.party_name || 'Independent'} • ${candidate.district || 'South Africa'}`;
+
+      const accountsContainer = document.getElementById('drawerAccountsList');
+      const copyAllBtn = document.getElementById('copyAllBtn');
+
+      if (!candidate.social_accounts || candidate.social_accounts.length === 0) {
+        accountsContainer.innerHTML = `<div style="color: var(--text-muted); padding: 16px 0;">No social accounts discovered for this candidate.</div>`;
+        copyAllBtn.style.display = 'none';
+      } else {
+        copyAllBtn.style.display = 'inline-flex';
+        window.currentCandidateUrls = candidate.social_accounts.map(a => a.profile_url);
+
+        accountsContainer.innerHTML = candidate.social_accounts.map((acc, idx) => {
+          const confPercent = Math.round(acc.confidence * 100);
+          const confClass = acc.confidence_level.toLowerCase();
+          const signalsList = acc.signals || [];
+          const signalsHtml = signalsList.map(s => `<span class="signal-chip">${s}</span>`).join('');
+
+          const nameMatchSignal = signalsList.find(s => s.includes("NAME")) || "Token Overlap Checked";
+          const locMatchSignal = signalsList.find(s => s.includes("LOCATION") || s.includes("GEOGRAPHY")) || (acc.rationale.toLowerCase().includes("district") ? "District Aligned" : "General Match");
+          const campaignSignal = signalsList.find(s => s.includes("CAMPAIGN") || s.includes("BIO")) || "Candidate Keyword Evaluated";
+          const partyAccountStatus = signalsList.includes("PARTY_ORGANIZATION_PENALTY") ? "❌ Flagged as Party Org Page" : "✓ Personal/Campaign Account (Party Excluded)";
+
+          return `
+            <div class="account-card">
+              <div class="account-header">
+                <span class="platform-name">${acc.platform}</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 13px; font-weight: 700; color: #fff;">${acc.confidence.toFixed(2)} / 1.00</span>
+                  <span class="badge-confidence ${confClass}">${confPercent}% ${acc.confidence_level}</span>
+                </div>
+              </div>
+
+              <div class="score-meter-wrap">
+                <div class="score-bar-bg">
+                  <div class="score-bar-fill ${confClass}" style="width: ${confPercent}%;"></div>
+                </div>
+              </div>
+
+              <div class="url-row">
+                <a href="${acc.profile_url}" target="_blank" rel="noopener noreferrer" class="account-url">${acc.profile_url}</a>
+                <button class="copy-btn" id="copyBtn_${idx}" onclick="copyUrl('${acc.profile_url}', 'copyBtn_${idx}')">📋 Copy</button>
+              </div>
+
+              <div class="criteria-box">
+                <div class="criteria-title">🔍 Evaluation Criteria & Weights</div>
+                <div class="criteria-grid">
+                  <div class="criteria-item">
+                    <span class="criteria-label">1. Name & Order Permutation (40%)</span>
+                    <span class="criteria-value">${nameMatchSignal}</span>
+                  </div>
+                  <div class="criteria-item">
+                    <span class="criteria-label">2. Geography & Ward/District (30%)</span>
+                    <span class="criteria-value">${locMatchSignal}</span>
+                  </div>
+                  <div class="criteria-item">
+                    <span class="criteria-label">3. Role & Campaign Bio Context (25%)</span>
+                    <span class="criteria-value">${campaignSignal}</span>
+                  </div>
+                  <div class="criteria-item">
+                    <span class="criteria-label">4. Party Account Exclusion Rule</span>
+                    <span class="criteria-value" style="color: ${signalsList.includes('PARTY_ORGANIZATION_PENALTY') ? 'var(--danger)' : '#34d399'};">${partyAccountStatus}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rationale">
+                <strong style="color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Evaluation Rationale:</strong>
+                ${acc.rationale}
+              </div>
+
+              <div class="signals-wrap">
+                <span style="font-size: 11px; color: #64748b; margin-right: 4px; align-self: center;">Signals:</span>
+                ${signalsHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Popolo JSON
+      try {
+        const parsed = JSON.parse(candidate.popolo_json);
+        document.getElementById('drawerPopoloJson').innerText = JSON.stringify(parsed, null, 2);
+      } catch {
+        document.getElementById('drawerPopoloJson').innerText = candidate.popolo_json || "{}";
+      }
+
+      document.getElementById('drawerOverlay').classList.add('active');
+    }
+
+    function copyUrl(text, btnId) {
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          const original = btn.innerHTML;
+          btn.innerHTML = '✓ Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove('copied');
+          }, 1600);
+        }
+      });
+    }
+
+    function copyAllAccountUrls() {
+      if (!window.currentCandidateUrls || window.currentCandidateUrls.length === 0) return;
+      navigator.clipboard.writeText(window.currentCandidateUrls.join('\n')).then(() => {
+        const btn = document.getElementById('copyAllBtn');
+        if (btn) {
+          const original = btn.innerHTML;
+          btn.innerHTML = '✓ All Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove('copied');
+          }, 1600);
+        }
+      });
+    }
+
+    function closeDrawer(e) {
+      if (e && e.target !== document.getElementById('drawerOverlay')) return;
+      document.getElementById('drawerOverlay').classList.remove('active');
+    }
+
+    // SQL Modal & WebAssembly SQLite
+    function openSqlModal() {
+      document.getElementById('sqlModalOverlay').classList.add('active');
+      if (!sqlDb) {
+        initSqlDatabase();
+      }
+    }
+
+    function closeSqlModal(e) {
+      if (e && e.target !== document.getElementById('sqlModalOverlay')) return;
+      document.getElementById('sqlModalOverlay').classList.remove('active');
+    }
+
+    async function initSqlDatabase() {
+      const status = document.getElementById('sqlStatus');
+      status.innerText = "Loading SQLite WebAssembly engine...";
+      try {
+        const config = { locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${filename}` };
+        const SQL = await initSqlJs(config);
+        status.innerText = "Downloading peps.db (4.6 MB)...";
+        const res = await fetch('data/peps.db');
+        const buf = await res.arrayBuffer();
+        sqlDb = new SQL.Database(new Uint8Array(buf));
+        status.innerText = "✓ SQLite engine ready!";
+      } catch (err) {
+        console.error("SQL init error:", err);
+        status.innerText = "Failed to load SQLite DB in-browser: " + err.message;
+      }
+    }
+
+    function executeSql() {
+      if (!sqlDb) {
+        alert("SQLite database is still downloading or loading. Please wait a moment.");
+        return;
+      }
+      const query = document.getElementById('sqlQueryInput').value;
+      const output = document.getElementById('sqlOutputWrap');
+      try {
+        const res = sqlDb.exec(query);
+        if (res.length === 0) {
+          output.innerHTML = "<p style='color: var(--text-muted); font-size: 13px;'>Query executed successfully. 0 rows returned.</p>";
+          return;
+        }
+        const columns = res[0].columns;
+        const values = res[0].values;
+        let html = "<table class='sql-results-table'><thead><tr>";
+        columns.forEach(c => html += `<th>${c}</th>`);
+        html += "</tr></thead><tbody>";
+        values.slice(0, 100).forEach(row => {
+          html += "<tr>";
+          row.forEach(val => html += `<td>${val !== null ? val : 'NULL'}</td>`);
+          html += "</tr>";
+        });
+        html += "</tbody></table>";
+        if (values.length > 100) {
+          html += `<p style='font-size: 11px; color: var(--text-muted); margin-top: 8px;'>Showing first 100 of ${values.length} rows.</p>`;
+        }
+        output.innerHTML = html;
+      } catch (err) {
+        output.innerHTML = `<p style='color: var(--danger); font-size: 13px;'>Error: ${err.message}</p>`;
+      }
+    }
+
+    // Debounced search
+    let debounceTimer;
+    document.getElementById('searchInput').addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(filterCandidates, 250);
+    });
+    document.getElementById('platformFilter').addEventListener('change', filterCandidates);
+    document.getElementById('confidenceFilter').addEventListener('change', filterCandidates);
+    document.getElementById('partyFilter').addEventListener('change', filterCandidates);
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

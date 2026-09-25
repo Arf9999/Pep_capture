@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSINT Methodology, Discovery Process & Research Limitations — PEP Social Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #111726;
+      --surface-border: #1f293d;
+      --surface-hover: #182238;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.2);
+      --accent: #6366f1;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 1px solid var(--surface-border);
+      background: rgba(17, 23, 38, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      font-size: 19px;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: var(--primary);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-left: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover {
+      background: var(--surface-hover);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .nav-btn.primary {
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    main {
+      padding: 40px 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    .hero-title {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      max-width: 800px;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+
+    .section-card p {
+      color: #cbd5e1;
+      font-size: 14px;
+      margin-bottom: 14px;
+      line-height: 1.7;
+    }
+
+    .process-step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .step-body h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .step-body p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 0;
+    }
+
+    .limitations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .limit-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--surface-border);
+      border-left: 4px solid var(--warning);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .limit-card.danger {
+      border-left-color: var(--danger);
+    }
+    .limit-card.accent {
+      border-left-color: var(--accent);
+    }
+    .limit-card.primary {
+      border-left-color: var(--primary);
+    }
+
+    .limit-card h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .limit-card p {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 0;
+      line-height: 1.6;
+    }
+
+    .callout {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    .callout strong { color: var(--primary); }
+
+    table.matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+    table.matrix-table th, table.matrix-table td {
+      border: 1px solid var(--surface-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    table.matrix-table th {
+      background: rgba(255, 255, 255, 0.04);
+      color: #fff;
+      font-weight: 600;
+    }
+    table.matrix-table td { color: #cbd5e1; }
+
+    footer {
+      border-top: 1px solid var(--surface-border);
+      padding: 24px 32px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo-badge">ZA</div>
+      <div>
+        <h1>PEP Social Intelligence <span>Methodology & Limitations</span></h1>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <a href="index.html" class="nav-btn primary">← Back to Search Dashboard</a>
+      <a href="data/peps.db" download class="nav-btn">💾 Download SQLite (4.6 MB)</a>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="hero-title">OSINT Discovery Methodology & Research Limitations</h1>
+    <p class="hero-subtitle">
+      A transparent explanation of the automated discovery pipeline, confidence scoring matrix, deep profile inspection heuristics, and critical research limitations for Politically Exposed Persons (PEPs) in South Africa.
+    </p>
+
+    <!-- SECTION 1: THE PROCESS -->
+    <div class="section-card">
+      <h2>🔍 The Discovery & Verification Process</h2>
+      <p>
+        The pipeline automates open-source intelligence (OSINT) discovery for South African Local Government Election candidates by searching across multiple social networks (LinkedIn, Facebook, Instagram, YouTube, TikTok, and X/Twitter), resolving identity variations, and scoring match confidence.
+      </p>
+
+      <div class="process-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Candidate Ingestion & Naming Normalization</h4>
+          <p>
+            Candidate records from the official Electoral Commission (IEC) dataset are ingested with their unique identifier (e.g. <code>pers_18589</code>), formal registered name, party affiliation, and electoral district/ward.
+          </p>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Multi-Permutation Name Resolution</h4>
+          <p>
+            Social media profiles rarely match official ballot papers exactly. The pipeline generates all realistic cultural naming permutations: <strong>First Last</strong>, <strong>Last First</strong> (surname-first registrations), <strong>Middle Last</strong> (candidates using English/middle names), <strong>Last Middle</strong>, <strong>First Middle</strong> (profiles omitting legal surnames on Facebook), and full 3-name variants.
+          </p>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Geographic & Municipal Cluster Expansion</h4>
+          <p>
+            Because personal profiles often mention suburban areas or main towns rather than the formal municipal code, district identifiers are expanded into known municipal clusters (e.g. <em>DC21 - Ugu</em> expands to <em>Port Shepstone, Margate, Hibiscus Coast, KwaZulu-Natal</em>; <em>NW403 - Matlosana</em> expands to <em>Klerksdorp, Jouberton, Kanana, Stilfontein</em>).
+          </p>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Two-Stage Confidence Evaluation</h4>
+          <p>
+            <strong>Stage 1 (Preview Evaluation):</strong> Google South Africa (<code>gl=za</code>) organic search results are evaluated against naming tokens, location mentions, and campaign keywords.<br>
+            <strong>Stage 2 (Deep Profile Inspection):</strong> For any profile scoring $\ge 0.50$, the system performs live inspection of the public profile page to confirm political party alignment, municipal council/councillor titles, and biographic background.
+          </p>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Exclusion Rules & Popolo Export</h4>
+          <p>
+            The system applies strict disqualification rules against official political party organizational accounts (e.g. <em>DA Official</em>, <em>ANC Regional Office</em>) and directory aggregator pages (<code>/public/</code>, <code>/pub/dir/</code>). Discovered accounts are stored in the Popolo Civic Data standard format in both SQLite and JSON.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: SCORING MATRIX -->
+    <div class="section-card">
+      <h2>⚖️ Confidence Scoring Matrix</h2>
+      <p>
+        Confidence scores range from <code>0.00</code> to <code>1.00</code> and are categorized into three operational confidence tiers:
+      </p>
+
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Evaluation Component</th>
+            <th>Weight / Score</th>
+            <th>Criteria & Signals</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Name Permutation Match</strong></td>
+            <td><code>+0.40 to +0.50</code></td>
+            <td>Exact First+Last, Middle+Last, or token overlap in profile title/handle.</td>
+          </tr>
+          <tr>
+            <td><strong>Geographic / District Match</strong></td>
+            <td><code>+0.30</code></td>
+            <td>Mention of municipal area, ward, town, or province in snippet or profile bio.</td>
+          </tr>
+          <tr>
+            <td><strong>Role / Bio Context</strong></td>
+            <td><code>+0.15 to +0.25</code></td>
+            <td>Mentions of <em>candidate, councillor, ward, election, director, manager</em>.</td>
+          </tr>
+          <tr>
+            <td><strong>Direct Profile URL Verification</strong></td>
+            <td><code>+0.15</code></td>
+            <td>Confirmed personal profile URL structure (excluding posts, hashtags, or groups).</td>
+          </tr>
+          <tr>
+            <td><strong>Deep Party Alignment Boost</strong></td>
+            <td><code>+0.30</code></td>
+            <td>Explicit confirmation of candidate's registered political party on profile page.</td>
+          </tr>
+          <tr>
+            <td><strong>Party Organization Penalty</strong></td>
+            <td><code>-0.50</code></td>
+            <td>Identified as an official branch, caucus, or party apparatus page rather than an individual.</td>
+          </tr>
+          <tr>
+            <td><strong>Conflicting Party Penalty</strong></td>
+            <td><code>-0.50</code></td>
+            <td>Profile explicitly claims public office in a rival major political party.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top: 20px;">
+        <strong>Confidence Tiers:</strong><br>
+        • <strong style="color: #34d399;">HIGH (≥ 0.70)</strong>: Strong identity convergence across name, verified location, and verified party or employment bio.<br>
+        • <strong style="color: #fbbf24;">MEDIUM (0.40 – 0.69)</strong>: Probable match with exact name and platform presence; requires human review of location or bio.<br>
+        • <strong style="color: #f87171;">LOW (&lt; 0.40)</strong>: Candidate name matched, but lacking sufficient corroborating geographic or campaign metadata.
+      </div>
+    </div>
+
+    <!-- SECTION 3: LIMITATIONS -->
+    <div class="section-card">
+      <h2>⚠️ Critical Research Limitations & Caveats</h2>
+      <p>
+        Users and investigative researchers must evaluate discovered profiles in light of the inherent structural constraints of automated OSINT collection:
+      </p>
+
+      <div class="limitations-grid">
+        <!-- Limitation 1 -->
+        <div class="limit-card danger">
+          <h4>🔒 1. Private & Friends-Only Accounts</h4>
+          <p>
+            A substantial proportion of local candidates configure their Facebook, Instagram, or TikTok profiles with strict privacy settings (*friends-only* or *mutuals*). These accounts are completely invisible to search spiders and unauthenticated crawlers, meaning genuine candidate profiles may not be discoverable without direct follower authorization.
+          </p>
+        </div>
+
+        <!-- Limitation 2 -->
+        <div class="limit-card accent">
+          <h4>🤖 2. Pages Unindexed by Search Robots</h4>
+          <p>
+            Candidate accounts created recently for campaign purposes, accounts with <code>noindex</code> directives, or platforms with restricted search indexing (such as Telegram channels or closed groups) do not appear in Google search indices. The pipeline can only discover profiles that search engine robots have indexed.
+          </p>
+        </div>
+
+        <!-- Limitation 3 -->
+        <div class="limit-card primary">
+          <h4>🧱 3. Platform Restrictions & Walled Gardens</h4>
+          <p>
+            Major social networks (especially LinkedIn, Facebook, and Instagram) aggressively enforce authentication firewalls, login interstitials, and session limits for automated inspection. While preview snippets and OpenGraph metadata provide surface corroboration, full timelines and private group memberships remain inaccessible behind walled gardens.
+          </p>
+        </div>
+
+        <!-- Limitation 4 -->
+        <div class="limit-card">
+          <h4>🛡️ 4. CAPTCHAs & Bot Mitigation Systems</h4>
+          <p>
+            Automated secondary fetching can encounter bot mitigation challenges (such as Cloudflare Turnstile, Google reCAPTCHA, or DataDome). Automated scrapers that encounter these defenses cannot solve them autonomously, requiring investigators to perform manual in-browser verification using authenticated accounts.
+          </p>
+        </div>
+
+        <!-- Limitation 5 -->
+        <div class="limit-card accent">
+          <h4>🧠 5. LLM & Heuristic Scoring Constraints</h4>
+          <p>
+            Algorithmic scoring models evaluate available textual strings. Profiles with minimal biographical text, figurative quotes, or sarcastic political commentary may evade automated scoring. Conversely, a profile that mentions a political party in passing (e.g. sharing news) can be misinterpreted if not carefully contextualized by human review.
+          </p>
+        </div>
+
+        <!-- Limitation 6 -->
+        <div class="limit-card danger">
+          <h4>👥 6. Highly Prevalent Names in Specific Regions</h4>
+          <p>
+            In South Africa, certain surnames, patronymics, and clan names (e.g. <em>Dlamini, Khumalo, Ndlovu, Mkhize, Sithole, Botha, Van der Merwe</em>) are shared by thousands of residents in the same municipal district. When candidates possess common first names without unique middle names or documented party bios, automated tools may identify another resident with the identical name. <strong>Always cross-reference with municipal council lists before publication.</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: INVESTIGATOR GUIDANCE -->
+    <div class="section-card">
+      <h2>📋 Best Practices for Investigators & Journalists</h2>
+      <p>
+        When using this dataset for investigative reporting, public accountability, or civic tech applications:
+      </p>
+      <ul style="padding-left: 20px; color: #cbd5e1; font-size: 14px; line-height: 1.8;">
+        <li><strong>Verify High-Impact Findings Manually:</strong> Never publish an attribution relying solely on automated heuristic scores. Check profile photos against campaign posters and official IEC ballot photos.</li>
+        <li><strong>Inspect the Popolo Specification:</strong> Review the raw Popolo JSON drawer for each candidate to examine the exact reasoning, triggered signal flags, and date of discovery.</li>
+        <li><strong>Cross-Check Political Affiliations:</strong> Verify that recent social media activity is consistent with the candidate's declared political party for the 2026 local government elections.</li>
+        <li><strong>Preserve Evidence:</strong> Social media posts and accounts may be deleted or modified during election cycles. Investigators should archive relevant profile snapshots using tools like the Wayback Machine or Archive.today.</li>
+      </ul>
+    </div>
+  </main>
+
+  <footer>
+    PEP Social Media Discovery & Popolo Intelligence System • Developed for Civic Tech & Investigative Transparency
+  </footer>
+</body>
+</html>

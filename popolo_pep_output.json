@@ -1,0 +1,79 @@
+{
+  "persons": [
+    {
+      "id": "pep-001",
+      "name": "Jane Smith",
+      "given_name": "Jane",
+      "family_name": "Smith",
+      "biography": null,
+      "national_identity": null,
+      "links": [
+        {
+          "url": "https://environment.gov.example/ministers/janesmith",
+          "note": "Official Government Website"
+        }
+      ],
+      "contact_details": [
+        {
+          "type": "twitter",
+          "value": "https://x.com/janesmith_env",
+          "label": "Twitter Profile",
+          "note": null,
+          "confidence": 0.91,
+          "confidence_level": "HIGH",
+          "verification_method": "multi_signal_heuristic",
+          "signals": [
+            "OFFICIAL_DOMAIN_CROSS_REF",
+            "PLATFORM_VERIFIED_BADGE",
+            "NAME_MATCH_HIGH (0.85)",
+            "ROLE_BIO_MATCH (minister,environment)"
+          ]
+        },
+        {
+          "type": "linkedin",
+          "value": "https://www.linkedin.com/in/janesmith-pol",
+          "label": "Linkedin Profile",
+          "note": null,
+          "confidence": 0.25,
+          "confidence_level": "LOW",
+          "verification_method": "multi_signal_heuristic",
+          "signals": [
+            "NAME_MATCH_HIGH (1.0)"
+          ]
+        }
+      ],
+      "created_at": null,
+      "updated_at": null
+    },
+    {
+      "id": "pep-002",
+      "name": "Carlos Gomez",
+      "given_name": "Carlos",
+      "family_name": "Gomez",
+      "biography": null,
+      "national_identity": null,
+      "links": [
+        {
+          "url": "https://senate.gov.example/members/cgomez",
+          "note": "Official Government Website"
+        }
+      ],
+      "contact_details": [
+        {
+          "type": "facebook",
+          "value": "https://facebook.com/carlosgomez.senator",
+          "label": "Facebook Profile",
+          "note": null,
+          "confidence": 0.21,
+          "confidence_level": "LOW",
+          "verification_method": "multi_signal_heuristic",
+          "signals": [
+            "NAME_MATCH_HIGH (0.85)"
+          ]
+        }
+      ],
+      "created_at": null,
+      "updated_at": null
+    }
+  ]
+}
