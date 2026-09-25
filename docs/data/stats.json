@@ -14,8 +14,8 @@
   "confidence_levels": {
     "POSSIBLE": 79,
     "POTENTIAL": 19,
-    "PROBABLE": 5,
-    "UNLIKELY": 402
+    "PROBABLE": 6,
+    "UNLIKELY": 401
   },
   "parties": [
     "ActionSA",
@@ -69,5 +69,5 @@
     "NW404 - Maquassi Hills",
     "NW405 - JB Marks"
   ],
-  "last_updated": "2026-09-25 11:20 UTC"
+  "last_updated": "2026-09-25 11:34 UTC"
 }

@@ -95,11 +95,16 @@ PARTY_ORGANIZATION_KEYWORDS = [
 HIGH_CONFIDENCE_CIVIC_KEYWORDS = [
     "councillor", "ward councillor", "pr councillor", "candidate", "mayoral candidate",
     "ward candidate", "local government election", "lge", "proportional representation",
-    "iec", "municipal council", "political party"
+    "iec", "municipal council", "political party",
+    # Multilingual & Visual Campaign Terms
+    "election", "elections", "election poster", "campaign poster", "vote for", "ballot",
+    "ukhetho", "zokhetho", "amavoti", "vota",           # isiZulu / isiXhosa
+    "verkiesing", "stem vir", "kandidaat",              # Afrikaans
+    "dikgetho", "kgetho"                                # Sesotho / Setswana / Sepedi
 ]
 
 GENERAL_CIVIC_KEYWORDS = [
-    "community leader", "activist", "local municipality", "civic", "parliament", "constituency"
+    "community leader", "activist", "local municipality", "civic", "parliament", "constituency", "governance"
 ]
 
 
