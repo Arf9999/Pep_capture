@@ -164,6 +164,28 @@ def inspect_profile_deep(
             score_delta -= 0.20
             deep_signals.append("NO_SOUTH_AFRICA_ON_PAGE_PENALTY (-0.20)")
 
+    # 5. Extract Outward Social / Messenger Handles (especially on Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site)
+    extracted_outward = []
+    outward_patterns = {
+        "WhatsApp": r'(?:wa\.me/|whatsapp\.com/send\?phone=)(\+?\d+)',
+        "Instagram": r'instagram\.com/([a-zA-Z0-9_\.]{3,30})',
+        "Twitter": r'(?:twitter\.com|x\.com)/([a-zA-Z0-9_]{3,20})',
+        "Facebook": r'facebook\.com/([a-zA-Z0-9\._\-]{3,40})',
+        "LinkedIn": r'linkedin\.com/in/([a-zA-Z0-9_\-]{3,50})',
+        "YouTube": r'youtube\.com/(?:@|channel/|c/)?([a-zA-Z0-9_\-]{3,40})',
+        "TikTok": r'tiktok\.com/@([a-zA-Z0-9_\.]{3,30})'
+    }
+    raw_html = meta.get("full_html_sample", "")
+    for plat_name, pat in outward_patterns.items():
+        found = re.findall(pat, raw_html, re.IGNORECASE)
+        clean_found = [f for f in found if f.lower() not in ("share", "sharer", "intent", "login", "signup", "terms", "privacy", "about")]
+        if clean_found:
+            extracted_outward.append(f"{plat_name}: @{clean_found[0]}")
+
+    if extracted_outward:
+        deep_signals.append(f"OUTWARD_HANDLES_DISCOVERED ({', '.join(extracted_outward[:3])})")
+        score_delta += 0.15
+
     # Update ContactDetail
     if deep_signals:
         new_score = round(min(1.0, max(0.10, contact.confidence + score_delta)), 2)

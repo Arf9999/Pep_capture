@@ -325,16 +325,29 @@ def evaluate_candidate_snippet(
             score += 0.10
             signals.append(f"CIVIC_CONTEXT_MATCH ({matched_gen_civic[0]})")
 
-    # 5. Direct Profile URL (Baseline check)
+    # 5. Direct Profile URL & Link-in-Bio Landing Page Check
+    is_link_in_bio = (
+        ("linktr.ee/" in url_lower and not any(x in url_lower for x in ["/login", "/register", "/admin", "/pricing", "/marketplace"])) or
+        ("beacons.ai/" in url_lower and not any(x in url_lower for x in ["/login", "/signup", "/pricing", "/creators"])) or
+        (".carrd.co" in url_lower) or
+        ("taplink.cc/" in url_lower and not any(x in url_lower for x in ["/login", "/registration", "/pricing"])) or
+        ("lnk.bio/" in url_lower and not any(x in url_lower for x in ["/login", "/register", "/pricing"])) or
+        (("bio.site/" in url_lower or "biosites.com/" in url_lower) and not any(x in url_lower for x in ["/login", "/signup"])) or
+        ("pallyy.com/" in url_lower and not any(x in url_lower for x in ["/login", "/register", "/pricing", "/blog"]))
+    )
     is_direct_profile = (
         ("linkedin.com/in/" in url_lower) or
         ("x.com/" in url_lower and not any(x in url_lower for x in ["/i/", "/intent", "/home", "/explore"])) or
         ("facebook.com/" in url_lower) or
         ("instagram.com/" in url_lower) or
         ("tiktok.com/@" in url_lower) or
-        ("youtube.com/@" in url_lower or "youtube.com/channel/" in url_lower)
+        ("youtube.com/@" in url_lower or "youtube.com/channel/" in url_lower) or
+        is_link_in_bio
     )
-    if is_direct_profile:
+    if is_link_in_bio:
+        score += 0.10
+        signals.append("LINK_IN_BIO_HUB")
+    elif is_direct_profile:
         score += 0.05
         signals.append("DIRECT_PROFILE_URL")
 

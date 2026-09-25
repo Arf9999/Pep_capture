@@ -19,7 +19,7 @@ class Link(BaseModel):
 
 
 class ContactDetail(BaseModel):
-    type: str = Field(..., description="Platform type: facebook, linkedin, twitter, instagram, tiktok, telegram, youtube")
+    type: str = Field(..., description="Platform type: facebook, linkedin, twitter, instagram, tiktok, youtube, telegram, linktree, beacons, carrd, taplink, pallyy, lnk.bio, biosite, social_web")
     value: str = Field(..., description="Profile URL or handle")
     label: Optional[str] = None
     note: Optional[str] = None

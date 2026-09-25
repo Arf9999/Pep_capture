@@ -141,20 +141,69 @@ def generate_consolidated_candidate_queries(row: Dict[str, str], max_queries: in
     if not name_perms:
         return []
 
-    combined_platforms = "(site:facebook.com OR site:linkedin.com/in OR site:x.com OR site:instagram.com OR site:tiktok.com OR site:youtube.com)"
+# Core Social & Link-in-Bio Platforms
+CORE_SOCIAL_PLATFORMS = [
+    "facebook.com", "linkedin.com/in", "x.com", "instagram.com", "tiktok.com", "youtube.com"
+]
 
-    # Prioritize top 4-5 permutations:
-    # First Last, Last First, Middle Last, Last Middle, First Middle Last
-    selected_perms = name_perms[:5]
+LINK_IN_BIO_PLATFORMS = [
+    "linktr.ee", "beacons.ai", "carrd.co", "taplink.cc", "lnk.bio", "bio.site", "pallyy.com"
+]
+
+ALL_TARGET_PLATFORMS = CORE_SOCIAL_PLATFORMS + LINK_IN_BIO_PLATFORMS
+
+
+def generate_consolidated_candidate_queries(row: Dict[str, str], max_queries: int = 1) -> List[str]:
+    """
+    Generates high-yield consolidated search query grouping top name order
+    permutations into an OR group combined with social media platform dorks
+    and creator link-in-bio hubs (Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site, Pallyy).
+    """
+    name_perms = generate_comprehensive_name_permutations(
+        first_name=row.get("first_name", ""),
+        middle_name=row.get("middle_name", ""),
+        last_name=row.get("last_name", ""),
+        full_name_raw=row.get("full_name", "")
+    )
+
+    if not name_perms:
+        return []
+
+    # Prioritize top 4 permutations:
+    selected_perms = name_perms[:4]
     names_or_group = f"({' OR '.join(selected_perms)})"
-    query = f"{names_or_group} {combined_platforms}"
 
-    return [query]
+    # All platforms combined dork
+    combined_dork = " OR ".join(f"site:{p}" for p in ALL_TARGET_PLATFORMS)
+    query_primary = f"{names_or_group} ({combined_dork})"
+
+    if max_queries <= 1:
+        return [query_primary]
+
+    # Query 2: Focused creator & link-in-bio landing hub dork
+    bio_dork = " OR ".join(f"site:{p}" for p in LINK_IN_BIO_PLATFORMS)
+    query_bio_hubs = f"{names_or_group} ({bio_dork})"
+
+    return [query_primary, query_bio_hubs]
 
 
 def infer_platform_from_url(url: str) -> str:
-    """Infers social platform type from candidate URL."""
+    """Infers social platform or link-in-bio hub type from candidate URL."""
     u = url.lower()
+    if "linktr.ee" in u:
+        return "linktree"
+    if "beacons.ai" in u:
+        return "beacons"
+    if "carrd.co" in u:
+        return "carrd"
+    if "taplink.cc" in u:
+        return "taplink"
+    if "lnk.bio" in u:
+        return "lnk.bio"
+    if "bio.site" in u or "biosites.com" in u:
+        return "biosite"
+    if "pallyy.com" in u:
+        return "pallyy"
     if "facebook.com" in u:
         return "facebook"
     if "linkedin.com" in u:

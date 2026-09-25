@@ -312,7 +312,7 @@
     <div class="section-card">
       <h2>🔍 The Discovery & Verification Process</h2>
       <p>
-        The pipeline automates open-source intelligence (OSINT) discovery for South African Local Government Election candidates by searching across multiple social networks (LinkedIn, Facebook, Instagram, YouTube, TikTok, and X/Twitter), resolving identity variations, and scoring match confidence.
+        The pipeline automates open-source intelligence (OSINT) discovery for South African Local Government Election candidates by searching across primary social networks (LinkedIn, Facebook, Instagram, YouTube, TikTok, and X/Twitter) alongside creator landing pages and link-in-bio hubs (<strong>Linktree, Beacons, Carrd, Taplink, Pallyy, Lnk.Bio, and Bio Sites by Squarespace</strong>), resolving identity variations, and scoring match confidence.
       </p>
 
       <div class="process-step">
@@ -348,10 +348,10 @@
       <div class="process-step">
         <div class="step-num">4</div>
         <div class="step-body">
-          <h4>Two-Stage Confidence Evaluation</h4>
+          <h4>Two-Stage Confidence Evaluation & Link-in-Bio Extraction</h4>
           <p>
-            <strong>Stage 1 (Preview Evaluation):</strong> Google South Africa (<code>gl=za</code>) organic search results are evaluated against naming tokens, location mentions, and campaign keywords.<br>
-            <strong>Stage 2 (Deep Profile Inspection):</strong> For any profile scoring $\ge 0.50$, the system performs live inspection of the public profile page to confirm political party alignment, municipal council/councillor titles, and biographic background.
+            <strong>Stage 1 (Preview Evaluation):</strong> Google South Africa (<code>gl=za</code>) organic search results are evaluated against naming tokens, granular location mentions, and campaign keywords.<br>
+            <strong>Stage 2 (Deep Profile & Link-in-Bio Inspection):</strong> For any profile scoring ≥ 0.35, the system performs live inspection of the public profile page. For creator hubs (Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site, Pallyy), the crawler automatically parses outward links to surface connected WhatsApp numbers, Facebook pages, Twitter handles, and campaign portals.
           </p>
         </div>
       </div>
