@@ -53,6 +53,7 @@ def run_pipeline(
     target_ids: Optional[List[str]] = None,
     researcher_filter: Optional[str] = None,
     provider: str = "serpent",
+    engines: str = "google,bing,brave",
     max_quota: int = 9000,
     eval_workers: int = 4
 ):
@@ -60,15 +61,16 @@ def run_pipeline(
         print(f"Error: CSV file not found at '{csv_file_path}'")
         return
 
+    engines_list = [e.strip() for e in engines.split(",") if e.strip()] if isinstance(engines, str) else (engines or ["google"])
     if provider == "serpent":
-        searcher = SerpentSearchEngine(max_daily_limit=max_quota)
+        searcher = SerpentSearchEngine(max_daily_limit=max_quota, engines=engines_list)
     else:
         searcher = SerperSearchEngine(max_daily_limit=max_quota)
 
     collection = PopoloCollection()
     init_database()
 
-    print(f"[{provider.upper()} API] Daily Search API budget remaining today: {searcher.get_remaining_daily_budget()} / {max_quota} queries")
+    print(f"[{provider.upper()} API] Engines: {engines_list} | Daily budget remaining today: {searcher.get_remaining_daily_budget()} / {max_quota} queries")
 
     target_id_set = set(target_ids) if target_ids else None
 
@@ -117,8 +119,8 @@ def run_pipeline(
                 district=district
             )
 
-            # 1. Primary candidate search across social media platforms
-            queries = generate_consolidated_candidate_queries(row, max_queries=2)
+            # 1. Primary candidate search across social media platforms & bio hubs
+            queries = generate_consolidated_candidate_queries(row, max_queries=1)
             raw_results = []
             seen_urls = set()
 
@@ -260,6 +262,7 @@ if __name__ == "__main__":
     parser.add_argument("--ids", type=str, default="", help="Comma-separated list of candidate IDs (e.g. pers_18589,pers_18590)")
 
     parser.add_argument("--provider", type=str, default="serpent", choices=["serpent", "serper"], help="Search provider to use")
+    parser.add_argument("--engines", type=str, default="google,bing,brave", help="Comma-separated search engines to query (e.g. google,bing,brave)")
     parser.add_argument("--max-quota", type=int, default=9000, help="Maximum search quota limit")
 
     args = parser.parse_args()
@@ -275,5 +278,6 @@ if __name__ == "__main__":
         target_ids=target_id_list,
         researcher_filter=args.researcher if args.researcher else None,
         provider=args.provider,
+        engines=args.engines,
         max_quota=args.max_quota
     )

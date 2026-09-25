@@ -151,15 +151,21 @@ class SerperSearchEngine:
 
 class SerpentSearchEngine(SerperSearchEngine):
     """
-    Serpent API (apiserpent.com) client supporting Google, Bing, Yahoo with South African localization.
+    Serpent API (apiserpent.com) client supporting Google, Bing, Yahoo, DuckDuckGo, and Brave
+    with South African localization and multi-engine result aggregation.
     """
     def __init__(
         self,
         api_key: Optional[str] = None,
-        max_daily_limit: int = 9000
+        max_daily_limit: int = 9000,
+        engines: Optional[List[str]] = None
     ):
         self.api_key = api_key or os.getenv("SERPENT_API_KEY")
         self.max_daily_limit = max_daily_limit
+        if isinstance(engines, str):
+            self.engines = [e.strip().lower() for e in engines.split(",") if e.strip()]
+        else:
+            self.engines = engines or ["google"]
 
         if not self.api_key:
             self._load_dotenv_serpent()
@@ -181,68 +187,85 @@ class SerpentSearchEngine(SerperSearchEngine):
 
     def search(self, query: str, num_results: int = 10, gl: str = "za") -> List[Dict[str, str]]:
         """
-        Executes Google search via apiserpent.com Quick Search with disk caching and quota safety.
+        Executes search via apiserpent.com across configured engines (Google, Bing, Brave, etc.)
+        with URL deduplication, disk caching, and quota enforcement.
         """
-        if query in self.cache:
-            return self.cache[query]
+        engines_tag = ",".join(sorted(self.engines))
+        cache_key = f"{query}__engines={engines_tag}"
 
-        remaining = self.get_remaining_daily_budget()
-        if remaining <= 0:
-            raise DailyQuotaExceededError(
-                f"Daily search quota of {self.max_daily_limit} reached for {self.usage.get('date')}."
-            )
+        if cache_key in self.cache:
+            return self.cache[cache_key]
+        if len(self.engines) == 1 and query in self.cache:
+            return self.cache[query]
 
         if not self.api_key:
             raise ValueError("SERPENT_API_KEY is not set.")
 
         import urllib.parse
         base_url = "https://apiserpent.com/api/search/quick"
-        params = {
-            "q": query,
-            "country": gl,
-            "num": num_results,
-            "engine": "google"
-        }
-        url = f"{base_url}?{urllib.parse.urlencode(params)}"
-        headers = {
-            "X-API-Key": self.api_key,
-            "User-Agent": "Mozilla/5.0 (compatible; PEPSocialDiscovery/1.0)"
-        }
-        req = urllib.request.Request(url, headers=headers)
+        all_results = []
+        seen_urls = set()
 
-        try:
-            with urllib.request.urlopen(req, timeout=15) as response:
-                resp_data = json.loads(response.read().decode("utf-8"))
-                self._increment_usage()
-                print(f"    [Google Search via SerpentAPI] Used: {self.usage['queries_used']}/{self.max_daily_limit} today")
+        for engine_name in self.engines:
+            remaining = self.get_remaining_daily_budget()
+            if remaining <= 0:
+                print(f"    ⚠️ Search budget exhausted ({self.max_daily_limit} queries today).")
+                break
 
-                results = []
-                res_obj = resp_data.get("results", {})
-                organic = res_obj.get("organic", []) if isinstance(res_obj, dict) else resp_data.get("organic", [])
-                if not organic and isinstance(resp_data.get("results"), list):
-                    organic = resp_data.get("results")
+            params = {
+                "q": query,
+                "country": gl,
+                "num": num_results,
+                "engine": engine_name
+            }
+            url = f"{base_url}?{urllib.parse.urlencode(params)}"
+            headers = {
+                "X-API-Key": self.api_key,
+                "User-Agent": "Mozilla/5.0 (compatible; PEPSocialDiscovery/1.0)"
+            }
+            req = urllib.request.Request(url, headers=headers)
 
-                for item in organic:
-                    u = item.get("url") or item.get("link", "")
-                    t = item.get("title", "")
-                    s = item.get("snippet") or item.get("description", "")
-                    if u:
-                        results.append({
-                            "title": t,
-                            "url": u,
-                            "snippet": s
-                        })
+            try:
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    resp_data = json.loads(response.read().decode("utf-8"))
+                    self._increment_usage()
+                    print(f"    [{engine_name.upper()} via SerpentAPI] Used: {self.usage['queries_used']}/{self.max_daily_limit} today")
 
-                self.cache[query] = results
-                self._save_json(CACHE_FILE, self.cache)
-                return results
+                    res_obj = resp_data.get("results", {})
+                    organic = res_obj.get("organic", []) if isinstance(res_obj, dict) else resp_data.get("organic", [])
+                    if not organic and isinstance(resp_data.get("results"), list):
+                        organic = resp_data.get("results")
 
-        except urllib.error.HTTPError as e:
-            err_body = e.read().decode("utf-8", errors="ignore")
-            print(f"Serpent API HTTP Error {e.code}: {err_body}")
-            if e.code in (401, 403):
-                raise DailyQuotaExceededError(f"SerpentAPI auth/quota error: {err_body}")
-            return []
-        except Exception as e:
-            print(f"Serpent API Request Error: {e}")
-            return []
+                    engine_added = 0
+                    for item in organic:
+                        u = item.get("url") or item.get("link", "")
+                        t = item.get("title", "")
+                        s = item.get("snippet") or item.get("description", "")
+                        if u and u.lower() not in seen_urls:
+                            seen_urls.add(u.lower())
+                            all_results.append({
+                                "title": t,
+                                "url": u,
+                                "snippet": s,
+                                "engine": engine_name
+                            })
+                            engine_added += 1
+                    print(f"      → Retrieved {engine_added} distinct results from {engine_name.upper()}.")
+
+            except urllib.error.HTTPError as e:
+                err_body = e.read().decode("utf-8", errors="ignore")
+                print(f"    ⚠️ Serpent API ({engine_name}) HTTP Error {e.code}: {err_body}")
+                if e.code in (401, 403):
+                    print("    ⚠️ Account credit limit reached or unauthorized on SerpentAPI.")
+                    break
+            except Exception as e:
+                print(f"    ⚠️ Serpent API ({engine_name}) Request Error: {e}")
+
+        # Save to persistent cache
+        if all_results:
+            self.cache[cache_key] = all_results
+            if len(self.engines) == 1:
+                self.cache[query] = all_results
+            self._save_json(CACHE_FILE, self.cache)
+
+        return all_results
