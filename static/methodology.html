@@ -348,10 +348,10 @@
       <div class="process-step">
         <div class="step-num">4</div>
         <div class="step-body">
-          <h4>Two-Stage Confidence Evaluation & Link-in-Bio Extraction</h4>
+          <h4>Link-in-Bio & Civic Bridge Harvesting (Assisting Confidence, Not Targets)</h4>
           <p>
-            <strong>Stage 1 (Preview Evaluation):</strong> Google South Africa (<code>gl=za</code>) organic search results are evaluated against naming tokens, granular location mentions, and campaign keywords.<br>
-            <strong>Stage 2 (Deep Profile & Link-in-Bio Inspection):</strong> For any profile scoring ≥ 0.35, the system performs live inspection of the public profile page. For creator hubs (Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site, Pallyy), the crawler automatically parses outward links to surface connected WhatsApp numbers, Facebook pages, Twitter handles, and campaign portals.
+            <strong>Extracting Handles, Not Scoring Targets:</strong> Linktree, Beacons, Carrd, Taplink, Lnk.Bio, and People's Assembly are <strong>not targets for analysis or scoring</strong> and are <strong>never stored as candidate accounts</strong> in the database. Their exclusive role is to bridge to genuine social media addresses/handles and candidate contact emails.<br>
+            <strong>Assisting Confidence:</strong> Because personal link-in-bio pages are curated directly by candidates, outward social handles corroborated via a candidate's personal bio hub receive an <em>assisting confidence signal</em> (<code>BIO_HUB_CORROBORATION</code>, +0.25). Conversely, 3rd-party civic directories (e.g. People's Assembly) do not confer confidence on social handles; they are utilized strictly to extract candidate email addresses for secondary verification.
           </p>
         </div>
       </div>
@@ -359,9 +359,19 @@
       <div class="process-step">
         <div class="step-num">5</div>
         <div class="step-body">
+          <h4>Email-Driven Secondary Social Search</h4>
+          <p>
+            When a candidate email address is extracted, the engine automatically issues a targeted secondary search across social media networks (e.g. <code>"candidate@email.com" (site:facebook.com OR site:linkedin.com/in ...)</code>). Social profiles bearing the candidate's verified email address receive deterministic corroboration (<code>EXACT_EMAIL_MATCH</code>), directly elevating confidence to <strong>PROBABLE (&gt; 0.70)</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-num">6</div>
+        <div class="step-body">
           <h4>Exclusion Rules & Popolo Export</h4>
           <p>
-            The system applies strict disqualification rules against official political party organizational accounts (e.g. <em>DA Official</em>, <em>ANC Regional Office</em>) and directory aggregator pages (<code>/public/</code>, <code>/pub/dir/</code>). Discovered accounts are stored in the Popolo Civic Data standard format in both SQLite and JSON.
+            Only real social media accounts are retained in the final dataset. Official political party organizational pages (e.g. <em>DA Official</em>, <em>ANC Regional Office</em>) and directory aggregator pages are disqualified. Discovered social accounts and verified emails are exported in the Popolo Civic Data standard format in SQLite and JSON.
           </p>
         </div>
       </div>
@@ -432,6 +442,16 @@
             <td><strong>Direct Profile URL Structure</strong></td>
             <td><code>+0.05</code></td>
             <td>Verified personal profile page URL (excluding directory listings, hashtag pages, and video feeds).</td>
+          </tr>
+          <tr style="background: rgba(16, 185, 129, 0.08);">
+            <td><strong style="color: var(--success);">Candidate Verified Email Match</strong></td>
+            <td><code style="color: var(--success);">+0.45</code></td>
+            <td>Direct match of candidate's verified email address (discovered via People's Assembly or candidate bio metadata). In OSINT, matching a unique personal/official email provides deterministic corroboration.</td>
+          </tr>
+          <tr style="background: rgba(56, 189, 248, 0.08);">
+            <td><strong style="color: var(--accent);">Personal Bio Hub Corroboration</strong></td>
+            <td><code style="color: var(--accent);">+0.25</code></td>
+            <td>Outward social address/handle corroborated via the candidate's personal link-in-bio hub (Linktree, Beacons, Carrd, Taplink, Lnk.Bio). The bio hub itself is discarded (not a target for scoring or storage), but assists to provide confidence to the outward social profile.</td>
           </tr>
           <tr style="background: rgba(239, 68, 68, 0.08);">
             <td><strong style="color: var(--danger);">Non-Matching South Africa Penalty</strong></td>

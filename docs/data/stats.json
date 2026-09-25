@@ -1,20 +1,21 @@
 {
   "total_persons": 1301,
-  "persons_with_accounts": 248,
-  "total_accounts": 490,
+  "persons_with_accounts": 257,
+  "total_accounts": 505,
   "platforms": {
     "linkedin": 355,
-    "facebook": 120,
-    "social_web": 6,
-    "instagram": 3,
+    "facebook": 121,
+    "instagram": 13,
+    "social_web": 7,
+    "youtube": 4,
     "twitter": 3,
-    "youtube": 3
+    "tiktok": 2
   },
   "confidence_levels": {
-    "POSSIBLE": 73,
+    "POSSIBLE": 79,
     "POTENTIAL": 19,
-    "PROBABLE": 3,
-    "UNLIKELY": 395
+    "PROBABLE": 5,
+    "UNLIKELY": 402
   },
   "parties": [
     "ActionSA",
@@ -68,5 +69,5 @@
     "NW404 - Maquassi Hills",
     "NW405 - JB Marks"
   ],
-  "last_updated": "2026-09-25 10:48 UTC"
+  "last_updated": "2026-09-25 11:20 UTC"
 }

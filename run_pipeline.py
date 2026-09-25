@@ -11,18 +11,28 @@ import os
 from typing import List, Optional
 
 from concurrent.futures import ThreadPoolExecutor
-from models import Person, PopoloCollection
-from query_builder import generate_consolidated_candidate_queries, infer_platform_from_url
+from models import Person, ContactDetail, ConfidenceLevel, PopoloCollection
+from query_builder import (
+    generate_consolidated_candidate_queries,
+    generate_email_social_query,
+    infer_platform_from_url
+)
 from search_engine import SerperSearchEngine, DailyQuotaExceededError
 from evaluator import evaluate_candidate_snippet
-from profile_inspector import inspect_profile_deep
+from profile_inspector import (
+    extract_emails_from_text,
+    fetch_peoples_assembly_emails,
+    is_discovery_hub_url,
+    inspect_discovery_hub_and_extract,
+    inspect_profile_deep
+)
 from db import init_database, upsert_person_with_accounts
 
 
 def evaluate_single_result(row, result):
     """Worker task to evaluate an individual search result with deep profile inspection if confidence >= 0.50."""
     url = result.get("url")
-    if not url:
+    if not url or is_discovery_hub_url(url):
         return None
     platform = infer_platform_from_url(url)
     contact = evaluate_candidate_snippet(pep_info=row, platform=platform, search_result=result)
@@ -101,7 +111,7 @@ def run_pipeline(
                 district=district
             )
 
-            # Generate consolidated query covering all target social platforms
+            # 1. Primary candidate search across social media platforms
             queries = generate_consolidated_candidate_queries(row, max_queries=2)
             raw_results = []
             seen_urls = set()
@@ -120,17 +130,101 @@ def run_pipeline(
                 print("Saving all progress processed so far and stopping.")
                 break
 
-            print(f"  ⚡ Found {len(raw_results)} candidate profile snippets. Evaluating in parallel ({eval_workers} workers)...")
+            # 2. Extract Candidate Emails & Outward Social Handles from Discovery Hubs
+            # NOTE: Link-in-bio hubs and People's Assembly are NOT targets themselves;
+            # they are used solely as bridges to extract candidate emails and outward personal social handles.
+            candidate_emails = set()
 
-            # Parallel evaluation of candidate search results
-            if raw_results:
+            # A. Extract emails from search snippets
+            for r in raw_results:
+                snippet_text = f"{r.get('title', '')} {r.get('snippet', '')}"
+                candidate_emails.update(extract_emails_from_text(snippet_text))
+
+            # B. Query People's Assembly (pa.org.za) solely for official email discovery
+            try:
+                pa_emails = fetch_peoples_assembly_emails(full_name)
+                if pa_emails:
+                    candidate_emails.update(pa_emails)
+                    print(f"  🏛️  People's Assembly: Discovered official email(s): {', '.join(pa_emails)}")
+            except Exception as e:
+                pass
+
+            # C. Inspect discovery hubs (Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site, Pallyy)
+            # Hubs are used strictly to harvest candidate social addresses/handles and emails.
+            # They are NEVER targets for scoring themselves, but assist to provide confidence to outward handles.
+            hub_corroborated_urls = set()
+            hub_handles = set()
+            outward_hub_snippets = []
+            for r in raw_results:
+                u = r.get("url", "")
+                if is_discovery_hub_url(u):
+                    hub_data = inspect_discovery_hub_and_extract(u)
+                    if hub_data.get("emails"):
+                        candidate_emails.update(hub_data["emails"])
+                    for s_item in hub_data.get("social_links", []):
+                        s_url = s_item["url"]
+                        s_handle = s_item["handle"]
+                        hub_corroborated_urls.add(s_url.lower())
+                        hub_handles.add(s_handle.lower())
+                        outward_hub_snippets.append({
+                            "title": f"{full_name} ({s_item['platform'].capitalize()})",
+                            "snippet": f"Personal profile link discovered on candidate landing hub {u}",
+                            "url": s_url
+                        })
+
+            # Store verified candidate email on Person record
+            primary_email = sorted(list(candidate_emails))[0] if candidate_emails else None
+            if primary_email:
+                person.email = primary_email
+                person.contact_details.append(ContactDetail(
+                    type="email",
+                    value=primary_email,
+                    label="Candidate Verified Contact Email",
+                    confidence=0.95,
+                    confidence_level=ConfidenceLevel.PROBABLE,
+                    rationale=f"Official contact email extracted for {full_name} via civic records / profile metadata.",
+                    signals=["CANDIDATE_EMAIL_EXTRACTED"]
+                ))
+                print(f"  📧 Verified Candidate Email: {primary_email}")
+
+            # 3. SECONDARY SEARCH: Use extracted email as a secondary search term across social sites!
+            secondary_social_results = []
+            if primary_email:
+                email_query = generate_email_social_query(primary_email)
+                print(f"  🔎 Secondary Social Search (via Email): {email_query}")
+                try:
+                    email_hits = searcher.search(email_query, num_results=10)
+                    for eh in email_hits:
+                        u = eh.get("url")
+                        if u and u not in seen_urls and not is_discovery_hub_url(u):
+                            seen_urls.add(u)
+                            secondary_social_results.append(eh)
+                except DailyQuotaExceededError as e:
+                    print(f"  ⚠️ Search quota reached during email secondary search: {e}")
+
+            # 4. Parallel evaluation of candidate direct social search results & outward hub handles
+            all_social_to_eval = [
+                r for r in raw_results if not is_discovery_hub_url(r.get("url", ""))
+            ] + secondary_social_results + outward_hub_snippets
+
+            row_context = {
+                **row,
+                "email": primary_email or "",
+                "hub_corroborated_urls": hub_corroborated_urls,
+                "hub_handles": hub_handles
+            }
+
+            print(f"  ⚡ Found {len(all_social_to_eval)} candidate social snippets. Evaluating in parallel ({eval_workers} workers)...")
+
+            if all_social_to_eval:
                 with ThreadPoolExecutor(max_workers=eval_workers) as executor:
-                    futures = [executor.submit(evaluate_single_result, row, res) for res in raw_results]
+                    futures = [executor.submit(evaluate_single_result, row_context, res) for res in all_social_to_eval]
                     for f in futures:
                         contact = f.result()
                         if contact:
-                            person.contact_details.append(contact)
-                            print(f"    ✓ Matched [{contact.type.upper()}] {contact.value} (Score: {contact.confidence})")
+                            if not any(c.value.lower() == contact.value.lower() for c in person.contact_details):
+                                person.contact_details.append(contact)
+                                print(f"    ✓ Matched [{contact.type.upper()}] {contact.value} (Score: {contact.confidence} | {contact.confidence_level})")
 
             # Save person to in-memory collection and SQLite database
             collection.persons.append(person)

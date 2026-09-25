@@ -68,7 +68,7 @@ def build_site():
     c.execute("""
         SELECT 
             p.id, p.name, p.first_name, p.middle_name, p.last_name, 
-            p.party_name, p.district, p.office, p.popolo_json,
+            p.party_name, p.district, p.office, p.email, p.popolo_json,
             count(s.id) as account_count,
             coalesce(max(s.confidence), 0.0) as max_confidence
         FROM persons p
@@ -118,6 +118,7 @@ def build_site():
             "party_name": r["party_name"] or "",
             "district": r["district"] or "",
             "office": r["office"] or "",
+            "email": r["email"] or "",
             "account_count": r["account_count"],
             "max_confidence": float(r["max_confidence"]),
             "social_accounts": accounts_by_person.get(pid, []),

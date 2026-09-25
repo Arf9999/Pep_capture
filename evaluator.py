@@ -231,6 +231,18 @@ def evaluate_candidate_snippet(
     if any(pat in url_lower for pat in disqualified_url_patterns):
         return None
 
+    # People's Assembly (pa.org.za) and Link-in-Bio hubs (Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site, Pallyy)
+    # are intermediate discovery sources used solely to extract outward social handles and emails.
+    # They are NEVER stored as social accounts themselves, nor scored as target accounts.
+    discovery_hub_domains = [
+        "pa.org.za", "linktr.ee", "beacons.ai", "carrd.co", "taplink.cc",
+        "lnk.bio", "bio.site", "biosites.com", "pallyy.com"
+    ]
+    if any(hub in url_lower for hub in discovery_hub_domains) or platform in (
+        "peoples_assembly", "linktree", "beacons", "carrd", "taplink", "lnk.bio", "biosite", "pallyy"
+    ):
+        return None
+
     signals = []
     score = 0.0
 
@@ -325,33 +337,36 @@ def evaluate_candidate_snippet(
             score += 0.10
             signals.append(f"CIVIC_CONTEXT_MATCH ({matched_gen_civic[0]})")
 
-    # 5. Direct Profile URL & Link-in-Bio Landing Page Check
-    is_link_in_bio = (
-        ("linktr.ee/" in url_lower and not any(x in url_lower for x in ["/login", "/register", "/admin", "/pricing", "/marketplace"])) or
-        ("beacons.ai/" in url_lower and not any(x in url_lower for x in ["/login", "/signup", "/pricing", "/creators"])) or
-        (".carrd.co" in url_lower) or
-        ("taplink.cc/" in url_lower and not any(x in url_lower for x in ["/login", "/registration", "/pricing"])) or
-        ("lnk.bio/" in url_lower and not any(x in url_lower for x in ["/login", "/register", "/pricing"])) or
-        (("bio.site/" in url_lower or "biosites.com/" in url_lower) and not any(x in url_lower for x in ["/login", "/signup"])) or
-        ("pallyy.com/" in url_lower and not any(x in url_lower for x in ["/login", "/register", "/pricing", "/blog"]))
-    )
+    # 5. Direct Profile URL Check
     is_direct_profile = (
         ("linkedin.com/in/" in url_lower) or
         ("x.com/" in url_lower and not any(x in url_lower for x in ["/i/", "/intent", "/home", "/explore"])) or
         ("facebook.com/" in url_lower) or
         ("instagram.com/" in url_lower) or
         ("tiktok.com/@" in url_lower) or
-        ("youtube.com/@" in url_lower or "youtube.com/channel/" in url_lower) or
-        is_link_in_bio
+        ("youtube.com/@" in url_lower or "youtube.com/channel/" in url_lower)
     )
-    if is_link_in_bio:
-        score += 0.10
-        signals.append("LINK_IN_BIO_HUB")
-    elif is_direct_profile:
+    if is_direct_profile:
         score += 0.05
         signals.append("DIRECT_PROFILE_URL")
 
-    # 6. Disqualify Official Party Organizational Accounts
+    # 6. Candidate Verified Email Match (Deterministic Corroboration: +0.45)
+    target_email = pep_info.get("email", "").strip().lower()
+    if target_email and (target_email in combined_snippet_text or target_email in url_lower):
+        score += 0.45
+        signals.append(f"EXACT_EMAIL_MATCH ({target_email})")
+
+    # 7. Candidate Personal Bio Hub Corroboration (Assisting Confidence: +0.25)
+    # Linktree, Beacons, Carrd, Taplink, and Lnk.Bio are NOT targets themselves.
+    # But if this social handle was discovered on or linked from the candidate's bio hub,
+    # it assists to provide confidence in this outward social profile.
+    hub_corroborated_urls = pep_info.get("hub_corroborated_urls", set())
+    hub_handles = pep_info.get("hub_handles", set())
+    if (url_lower in hub_corroborated_urls) or any(h in url_lower for h in hub_handles if len(h) >= 3):
+        score += 0.25
+        signals.append("BIO_HUB_CORROBORATION")
+
+    # 8. Disqualify Official Party Organizational Accounts
     is_party_account = any(kw in combined_snippet_text for kw in PARTY_ORGANIZATION_KEYWORDS)
     if is_party_account:
         score -= 0.50

@@ -17,6 +17,8 @@ An automated OSINT discovery, verification, and standardization pipeline for Pol
 - **Standalone Static Dashboard (`docs/`)**: 100% serverless single-page app ready to host on GitHub Pages.
 - **Embedded SQLite WebAssembly Engine**: Run real SQL queries (`SELECT ... WHERE ...`) directly inside the visitor's browser against the bundled `peps.db` file using `sql.js`.
 - **Complete Dataset Downloads**: Direct 1-click downloads for both `data/peps.db` (SQLite) and `data/popolo_sa_candidates.json` (Popolo format).
+- **Email-Driven Secondary Social Search**: If an email address is extracted (e.g. through People's Assembly `pa.org.za`, municipal records, or candidate bios), it is automatically queued as a secondary search term specifically across social networks (`"<email>" site:facebook.com OR site:linkedin.com ...`).
+- **Intelligence Hub Bridges (Not Targets)**: Link-in-bio sites (Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site, Pallyy) and People's Assembly are used solely as discovery bridges to harvest candidate email addresses and outward personal social handles. They are never stored as target accounts themselves.
 - **Two-Stage Profile Verification**:
   1. *Preview Evaluation*: Multi-permutation name matching, district/municipal cluster expansion, and party account disqualification.
   2. *Deep Profile Inspection*: For matches scoring $\ge 0.50$, fetches live profile metadata to verify political party affiliations, biographical details, municipal council/councillor positions, and recent post context.
@@ -30,24 +32,25 @@ An automated OSINT discovery, verification, and standardization pipeline for Pol
 | Metric | Status |
 | :--- | :--- |
 | **Total Candidates Ingested** | **1,301** |
-| **Candidates with Social Accounts** | **248** (19.1%) |
-| **Total Accounts Retained** | **490** |
-| **🟢 Probable (> 0.70)** | **3** (Multi-factor: Name + Local Town + Party/Role) |
+| **Candidates with Social Accounts** | **257** (19.8%) |
+| **Candidates with Verified Emails** | **49** (harvested via People's Assembly / civic profiles) |
+| **Total Accounts Retained** | **505** (100% genuine social media handles) |
+| **🟢 Probable (> 0.70)** | **5** (Multi-factor: Name + Local Town + Party/Role / Email Match) |
 | **🔵 Potential (0.55 – 0.70)** | **19** (Strong correlation: Name + Local Town/Suburb) |
-| **🟡 Possible (0.40 – 0.54)** | **73** (Moderate correlation: Name + Municipality/Civic) |
-| **⚪ Unlikely (< 0.40)** | **395** (Tentative name match with SA anchor only) |
+| **🟡 Possible (0.40 – 0.54)** | **79** (Moderate correlation: Name + Municipality/Civic) |
+| **⚪ Unlikely (< 0.40)** | **402** (Tentative name match with SA anchor only) |
 | **Disqualified / Non-SA False Positives** | **~2,500 dropped** (Lack SA anchor, foreign, or party org) |
 | **SQLite Database Size** | **4.6 MB** (`peps.db`) |
 | **Popolo Collection JSON Size** | **1.5 MB** (`popolo_sa_candidates.json`) |
 
-### Platform Distribution
-- **LinkedIn**: 358 accounts (professional roles, biographic context, and municipal alignment)
-- **Facebook**: 123 accounts (candidate pages and community profiles)
-- **Instagram**: 7 accounts
-- **Candidate Web**: 6 verified portals
-- **YouTube**: 5 campaign channels/videos
+### Platform Distribution (Social Media Sites Only)
+- **LinkedIn**: 355 accounts (professional roles, biographic context, and municipal alignment)
+- **Facebook**: 121 accounts (candidate pages and community profiles)
+- **Instagram**: 13 accounts (verified candidate handles)
+- **Candidate Web**: 7 verified portals
+- **YouTube**: 4 campaign channels/videos
 - **Twitter / X**: 3 handles
-- **TikTok**: 1 handle
+- **TikTok**: 2 handles
 
 ---
 

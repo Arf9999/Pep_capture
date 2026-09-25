@@ -153,11 +153,13 @@ LINK_IN_BIO_PLATFORMS = [
 ALL_TARGET_PLATFORMS = CORE_SOCIAL_PLATFORMS + LINK_IN_BIO_PLATFORMS
 
 
+
 def generate_consolidated_candidate_queries(row: Dict[str, str], max_queries: int = 1) -> List[str]:
     """
     Generates high-yield consolidated search query grouping top name order
-    permutations into an OR group combined with social media platform dorks
-    and creator link-in-bio hubs (Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site, Pallyy).
+    permutations into an OR group combined with social media platform dorks,
+    creator link-in-bio hubs (Linktree, Beacons, Carrd, Taplink, Lnk.Bio, Bio.site, Pallyy),
+    and civic monitoring records (pa.org.za).
     """
     name_perms = generate_comprehensive_name_permutations(
         first_name=row.get("first_name", ""),
@@ -187,9 +189,23 @@ def generate_consolidated_candidate_queries(row: Dict[str, str], max_queries: in
     return [query_primary, query_bio_hubs]
 
 
+def generate_email_social_query(email: str) -> str:
+    """
+    Generates a targeted secondary search query across all social platforms
+    and link-in-bio hubs using an extracted candidate email address.
+    e.g. '"councillor@example.com" (site:facebook.com OR site:linkedin.com/in ...)'
+    """
+    clean_email = email.strip().lower()
+    social_and_bio = CORE_SOCIAL_PLATFORMS + LINK_IN_BIO_PLATFORMS
+    combined_dork = " OR ".join(f"site:{p}" for p in social_and_bio)
+    return f'"{clean_email}" ({combined_dork})'
+
+
 def infer_platform_from_url(url: str) -> str:
-    """Infers social platform or link-in-bio hub type from candidate URL."""
+    """Infers social platform, civic site, or link-in-bio hub type from candidate URL."""
     u = url.lower()
+    if "pa.org.za" in u:
+        return "peoples_assembly"
     if "linktr.ee" in u:
         return "linktree"
     if "beacons.ai" in u:
@@ -219,3 +235,4 @@ def infer_platform_from_url(url: str) -> str:
     if "t.me" in u:
         return "telegram"
     return "social_web"
+

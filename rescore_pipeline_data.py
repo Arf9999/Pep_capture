@@ -15,6 +15,12 @@ from typing import Dict, List, Any
 from query_builder import generate_consolidated_candidate_queries
 from evaluator import evaluate_candidate_snippet
 from models import Person, ContactDetail, Link, PopoloCollection, ConfidenceLevel
+from profile_inspector import (
+    extract_emails_from_text,
+    is_discovery_hub_url,
+    inspect_discovery_hub_and_extract,
+    inspect_profile_deep
+)
 
 
 DB_PATH = "peps.db"
@@ -46,6 +52,11 @@ def rescore_all():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    try:
+        cursor.execute("ALTER TABLE persons ADD COLUMN email TEXT;")
+    except sqlite3.OperationalError:
+        pass
+
     cursor.execute("SELECT * FROM persons ORDER BY id ASC")
     persons = cursor.fetchall()
     total_persons = len(persons)
@@ -68,7 +79,8 @@ def rescore_all():
             "last_name": p["last_name"] or "",
             "party_name": p["party_name"] or "",
             "b ": p["district"] or "",
-            "office": p["office"] or ""
+            "office": p["office"] or "",
+            "email": p["email"] if "email" in p.keys() and p["email"] else ""
         }
 
         parts = [x.strip().lower() for x in re.split(r'[\s,]+', p["name"]) if x.strip()]
@@ -89,17 +101,53 @@ def rescore_all():
                             seen_urls.add(u)
                             candidate_cache_items.append(it)
 
-        # 2. Evaluate all snippets with new 4-tier disciplined model & deep inspection
-        scored_contacts: Dict[str, ContactDetail] = {}
+        # 2. Extract Candidate Emails & Bio Hub Outward Links
+        candidate_emails = set()
+        for it in candidate_cache_items:
+            txt = f"{it.get('title', '')} {it.get('snippet', '')}"
+            candidate_emails.update(extract_emails_from_text(txt))
+
+        hub_corroborated_urls = set()
+        hub_handles = set()
+        outward_hub_items = []
         for it in candidate_cache_items:
             u = it.get("link") or it.get("url")
+            if u and is_discovery_hub_url(u):
+                hub_data = inspect_discovery_hub_and_extract(u)
+                if hub_data.get("emails"):
+                    candidate_emails.update(hub_data["emails"])
+                for s_item in hub_data.get("social_links", []):
+                    s_url = s_item["url"]
+                    s_handle = s_item["handle"]
+                    hub_corroborated_urls.add(s_url.lower())
+                    hub_handles.add(s_handle.lower())
+                    outward_hub_items.append({
+                        "link": s_url,
+                        "url": s_url,
+                        "title": f"{row.get('full_name', '')} ({s_item['platform'].capitalize()})",
+                        "snippet": f"Personal profile link discovered on candidate landing hub {u}"
+                    })
+
+        primary_email = sorted(list(candidate_emails))[0] if candidate_emails else (row["email"] or None)
+        if primary_email:
+            row["email"] = primary_email
+            cursor.execute("UPDATE persons SET email = ? WHERE id = ?", (primary_email, person_id))
+
+        row["hub_corroborated_urls"] = hub_corroborated_urls
+        row["hub_handles"] = hub_handles
+
+        # 3. Evaluate all snippets with new 4-tier disciplined model & deep inspection
+        scored_contacts: Dict[str, ContactDetail] = {}
+        for it in (candidate_cache_items + outward_hub_items):
+            u = it.get("link") or it.get("url")
+            if not u or is_discovery_hub_url(u):
+                continue
             plat = get_platform_from_url(u)
             s = {"title": it.get("title", ""), "snippet": it.get("snippet", ""), "url": u}
             contact = evaluate_candidate_snippet(row, plat, s)
             if contact:
                 # Deep profile inspection for potential matches
                 if contact.confidence >= 0.55:
-                    from profile_inspector import inspect_profile_deep
                     contact = inspect_profile_deep(contact, row)
 
                 # Keep highest score for this specific URL

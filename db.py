@@ -33,10 +33,17 @@ def init_database(db_path: str = DB_FILE):
         party_name TEXT,
         office TEXT,
         district TEXT,
+        email TEXT,
         popolo_json TEXT,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
+
+    # Column migration for existing databases
+    try:
+        cursor.execute("ALTER TABLE persons ADD COLUMN email TEXT;")
+    except sqlite3.OperationalError:
+        pass  # column already exists
 
     # Social Accounts / Contact Details Table
     cursor.execute("""
@@ -60,6 +67,7 @@ def init_database(db_path: str = DB_FILE):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_persons_name ON persons(name);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_persons_party ON persons(party_name);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_persons_district ON persons(district);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_persons_email ON persons(email);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_social_person_id ON social_accounts(person_id);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_social_platform ON social_accounts(platform);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_social_confidence ON social_accounts(confidence_level);")
@@ -75,15 +83,17 @@ def upsert_person_with_accounts(person_dict: Dict[str, Any], db_path: str = DB_F
 
     person_id = person_dict["id"]
     now = datetime.utcnow().isoformat()
+    email = person_dict.get("email")
 
     cursor.execute("""
-    INSERT INTO persons (id, name, first_name, middle_name, last_name, party_name, office, district, popolo_json, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO persons (id, name, first_name, middle_name, last_name, party_name, office, district, email, popolo_json, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         party_name = excluded.party_name,
         office = excluded.office,
         district = excluded.district,
+        email = coalesce(excluded.email, persons.email),
         popolo_json = excluded.popolo_json,
         updated_at = excluded.updated_at;
     """, (
@@ -95,6 +105,7 @@ def upsert_person_with_accounts(person_dict: Dict[str, Any], db_path: str = DB_F
         person_dict.get("party_name"),
         person_dict.get("office"),
         person_dict.get("district"),
+        email,
         json.dumps(person_dict),
         now
     ))

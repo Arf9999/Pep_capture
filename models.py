@@ -28,6 +28,7 @@ class ContactDetail(BaseModel):
     confidence_level: ConfidenceLevel
     rationale: str = Field(..., description="Evaluation rationale explaining name, geography, and bio match")
     signals: List[str] = Field(default_factory=list, description="List of matching signals triggered during evaluation")
+    discovered_emails: List[str] = Field(default_factory=list, description="Candidate email addresses discovered during page inspection")
 
 
 class Person(BaseModel):
@@ -39,6 +40,7 @@ class Person(BaseModel):
     party_name: Optional[str] = None
     office: Optional[str] = None
     district: Optional[str] = None
+    email: Optional[str] = Field(default=None, description="Extracted personal, parliamentary, or civic email address")
     links: List[Link] = Field(default_factory=list, description="Popolo link representations of discovered profiles")
     contact_details: List[ContactDetail] = Field(default_factory=list, description="Popolo contact details with verification metrics")
     created_at: Optional[str] = None
