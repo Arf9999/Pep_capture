@@ -17,7 +17,7 @@ from query_builder import (
     generate_email_social_query,
     infer_platform_from_url
 )
-from search_engine import SerperSearchEngine, DailyQuotaExceededError
+from search_engine import SerperSearchEngine, SerpentSearchEngine, DailyQuotaExceededError
 from evaluator import evaluate_candidate_snippet
 from profile_inspector import (
     extract_emails_from_text,
@@ -52,17 +52,23 @@ def run_pipeline(
     start_id: Optional[str] = None,
     target_ids: Optional[List[str]] = None,
     researcher_filter: Optional[str] = None,
+    provider: str = "serpent",
+    max_quota: int = 9000,
     eval_workers: int = 4
 ):
     if not os.path.exists(csv_file_path):
         print(f"Error: CSV file not found at '{csv_file_path}'")
         return
 
-    searcher = SerperSearchEngine(max_daily_limit=1000)
+    if provider == "serpent":
+        searcher = SerpentSearchEngine(max_daily_limit=max_quota)
+    else:
+        searcher = SerperSearchEngine(max_daily_limit=max_quota)
+
     collection = PopoloCollection()
     init_database()
 
-    print(f"Daily Search API budget remaining today: {searcher.get_remaining_daily_budget()} / 1000 queries")
+    print(f"[{provider.upper()} API] Daily Search API budget remaining today: {searcher.get_remaining_daily_budget()} / {max_quota} queries")
 
     target_id_set = set(target_ids) if target_ids else None
 
@@ -253,6 +259,9 @@ if __name__ == "__main__":
     parser.add_argument("--researcher", type=str, default="", help="Filter candidates assigned to a specific researcher (e.g. 'Andrew Fraser')")
     parser.add_argument("--ids", type=str, default="", help="Comma-separated list of candidate IDs (e.g. pers_18589,pers_18590)")
 
+    parser.add_argument("--provider", type=str, default="serpent", choices=["serpent", "serper"], help="Search provider to use")
+    parser.add_argument("--max-quota", type=int, default=9000, help="Maximum search quota limit")
+
     args = parser.parse_args()
 
     target_id_list = [i.strip() for i in args.ids.split(",") if i.strip()] if args.ids else None
@@ -264,5 +273,7 @@ if __name__ == "__main__":
         start_record=args.start,
         start_id=args.start_id if args.start_id else None,
         target_ids=target_id_list,
-        researcher_filter=args.researcher if args.researcher else None
+        researcher_filter=args.researcher if args.researcher else None,
+        provider=args.provider,
+        max_quota=args.max_quota
     )
