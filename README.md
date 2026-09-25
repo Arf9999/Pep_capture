@@ -25,26 +25,28 @@ An automated OSINT discovery, verification, and standardization pipeline for Pol
 
 ---
 
-## 📊 Live Discovery Statistics
+## 📊 Live Discovery Statistics (Disciplined Scoring Model)
 
 | Metric | Status |
 | :--- | :--- |
 | **Total Candidates Ingested** | **1,301** |
-| **Candidates with Discovered Accounts** | **709** (54.5% hit rate) |
-| **Total Discovered Social Accounts** | **3,002** |
-| **High Confidence Matches ($\ge 0.70$)** | **1,101** |
-| **Medium Confidence Matches ($0.40 - 0.69$)** | **1,728** |
+| **Candidates with Verified Accounts** | **250** (19.2%) |
+| **Total Accounts Retained** | **503** |
+| **High Confidence Matches ($\ge 0.70$)** | **3** (Multi-factor: Name + Local Town + Party/Role) |
+| **Medium Confidence Matches ($0.40 - 0.69$)** | **108** (Local Municipality/Town or Civic context) |
+| **Low Confidence Matches ($0.20 - 0.39$)** | **392** (Tentative name match with SA anchor) |
+| **Disqualified / Non-SA False Positives** | **~2,500 dropped** (Lack SA anchor, foreign, or party org) |
 | **SQLite Database Size** | **4.6 MB** (`peps.db`) |
 | **Popolo Collection JSON Size** | **1.5 MB** (`popolo_sa_candidates.json`) |
 
 ### Platform Distribution
-- **Facebook**: 1,337 accounts (vanity and `/p/<name>-<id>` direct profiles)
-- **LinkedIn**: 840 accounts (biographies, municipal roles, education)
-- **Instagram**: 333 accounts
-- **YouTube**: 303 channels and campaign videos
-- **Candidate Web**: 78 verified portals
-- **TikTok**: 75 handles
-- **Twitter / X**: 36 handles
+- **LinkedIn**: 358 accounts (professional roles, biographic context, and municipal alignment)
+- **Facebook**: 123 accounts (candidate pages and community profiles)
+- **Instagram**: 7 accounts
+- **Candidate Web**: 6 verified portals
+- **YouTube**: 5 campaign channels/videos
+- **Twitter / X**: 3 handles
+- **TikTok**: 1 handle
 
 ---
 

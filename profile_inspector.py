@@ -152,6 +152,18 @@ def inspect_profile_deep(
         score_delta += 0.15
         deep_signals.append(f"PAGE_LOCATION_CONFIRMED ({','.join(matched_page_locs[:2])})")
 
+    # Check for foreign locations or lack of South African anchor on profile page
+    foreign_locs = ["united kingdom", "london", "united states", "usa", "new york", "california", "canada", "australia", "nigeria", "kenya", "india", "dubai"]
+    matched_page_foreign = [f for f in foreign_locs if re.search(r'\b' + re.escape(f) + r'\b', combined_text)]
+    if matched_page_foreign:
+        score_delta -= 0.50
+        deep_signals.append(f"FOREIGN_LOCATION_PAGE_DETECTED ({matched_page_foreign[0].title()})")
+    else:
+        has_page_sa = bool(matched_page_locs) or any(a in combined_text for a in ["south africa", "rsa", "za", ".co.za", "+27"])
+        if not has_page_sa:
+            score_delta -= 0.20
+            deep_signals.append("NO_SOUTH_AFRICA_ON_PAGE_PENALTY (-0.20)")
+
     # Update ContactDetail
     if deep_signals:
         new_score = round(min(1.0, max(0.10, contact.confidence + score_delta)), 2)

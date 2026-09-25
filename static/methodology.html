@@ -369,9 +369,9 @@
 
     <!-- SECTION 2: SCORING MATRIX -->
     <div class="section-card">
-      <h2>⚖️ Confidence Scoring Matrix</h2>
+      <h2>⚖️ Disciplined Confidence Scoring Matrix</h2>
       <p>
-        Confidence scores range from <code>0.00</code> to <code>1.00</code> and are categorized into three operational confidence tiers:
+        To prevent false positives from common South African names and broad geographic references, the scoring engine enforces strict multi-tier weighting. Basic name similarity alone receives low baseline confidence, broad country-level confirmation provides zero score boost, and <strong>failing to match South Africa incurs negative scoring</strong>.
       </p>
 
       <table class="matrix-table">
@@ -379,53 +379,89 @@
           <tr>
             <th>Evaluation Component</th>
             <th>Weight / Score</th>
-            <th>Criteria & Signals</th>
+            <th>Criteria & Disciplined OSINT Rationale</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>Name Permutation Match</strong></td>
-            <td><code>+0.40 to +0.50</code></td>
-            <td>Exact First+Last, Middle+Last, or token overlap in profile title/handle.</td>
-          </tr>
-          <tr>
-            <td><strong>Geographic / District Match</strong></td>
+            <td><strong>Full 3-Name Exact Match</strong></td>
             <td><code>+0.30</code></td>
-            <td>Mention of municipal area, ward, town, or province in snippet or profile bio.</td>
+            <td>Exact First + Middle + Last name alignment (distinctive individual identity).</td>
           </tr>
           <tr>
-            <td><strong>Role / Bio Context</strong></td>
-            <td><code>+0.15 to +0.25</code></td>
-            <td>Mentions of <em>candidate, councillor, ward, election, director, manager</em>.</td>
+            <td><strong>First + Last Name Match</strong></td>
+            <td><code>+0.18</code></td>
+            <td>Basic name match. Intentionally conservative because similar names are highly prevalent.</td>
           </tr>
           <tr>
-            <td><strong>Direct Profile URL Verification</strong></td>
+            <td><strong>Middle + Last Name Match</strong></td>
             <td><code>+0.15</code></td>
-            <td>Confirmed personal profile URL structure (excluding posts, hashtags, or groups).</td>
+            <td>Candidate using registered middle name and surname on professional profile.</td>
           </tr>
           <tr>
-            <td><strong>Deep Party Alignment Boost</strong></td>
+            <td><strong>Granular Town / Suburb Match</strong></td>
             <td><code>+0.30</code></td>
-            <td>Explicit confirmation of candidate's registered political party on profile page.</td>
+            <td>Specific local town or suburb (e.g. <em>Margate, Port Shepstone, Klerksdorp, Jouberton, Mdantsane</em>).</td>
           </tr>
           <tr>
-            <td><strong>Party Organization Penalty</strong></td>
-            <td><code>-0.50</code></td>
-            <td>Identified as an official branch, caucus, or party apparatus page rather than an individual.</td>
+            <td><strong>District / Municipality Match</strong></td>
+            <td><code>+0.20</code></td>
+            <td>Formal district municipality or metro (e.g. <em>Ugu, Matlosana, City of Johannesburg, Buffalo City</em>).</td>
           </tr>
           <tr>
-            <td><strong>Conflicting Party Penalty</strong></td>
-            <td><code>-0.50</code></td>
-            <td>Profile explicitly claims public office in a rival major political party.</td>
+            <td><strong>Province Match</strong></td>
+            <td><code>+0.05</code></td>
+            <td>Broad regional province alignment (e.g. <em>KwaZulu-Natal, North West, Eastern Cape, Gauteng</em>).</td>
+          </tr>
+          <tr>
+            <td><strong>Broad Country ('South Africa' / 'ZA')</strong></td>
+            <td><code>+0.00</code></td>
+            <td>Country baseline only. Does <strong>not</strong> grant confidence boost without local granularity.</td>
+          </tr>
+          <tr>
+            <td><strong>Political Party Affiliation</strong></td>
+            <td><code>+0.30</code></td>
+            <td>Explicit match with candidate's registered political party (e.g. <em>ANC, DA, EFF, ActionSA, IFP, PA, VF Plus</em>).</td>
+          </tr>
+          <tr>
+            <td><strong>Civic / Councillor Role Match</strong></td>
+            <td><code>+0.25</code></td>
+            <td>Explicit civic roles: <em>councillor, ward councillor, mayoral candidate, PR councillor, municipal council, IEC</em>.</td>
+          </tr>
+          <tr>
+            <td><strong>Direct Profile URL Structure</strong></td>
+            <td><code>+0.05</code></td>
+            <td>Verified personal profile page URL (excluding directory listings, hashtag pages, and video feeds).</td>
+          </tr>
+          <tr style="background: rgba(239, 68, 68, 0.08);">
+            <td><strong style="color: var(--danger);">Non-Matching South Africa Penalty</strong></td>
+            <td><code style="color: var(--danger);">-0.25</code></td>
+            <td>Profile lacks any South African municipal, provincial, or national geographic anchors.</td>
+          </tr>
+          <tr style="background: rgba(239, 68, 68, 0.08);">
+            <td><strong style="color: var(--danger);">Foreign Location Penalty</strong></td>
+            <td><code style="color: var(--danger);">-0.50</code></td>
+            <td>Profile explicitly located in a foreign country or international city (UK, USA, Nigeria, Kenya, India, etc.).</td>
+          </tr>
+          <tr style="background: rgba(239, 68, 68, 0.08);">
+            <td><strong style="color: var(--danger);">Conflicting Party Claim Penalty</strong></td>
+            <td><code style="color: var(--danger);">-0.50</code></td>
+            <td>Profile explicitly claims public office or active leadership in an opposing rival party.</td>
+          </tr>
+          <tr style="background: rgba(239, 68, 68, 0.08);">
+            <td><strong style="color: var(--danger);">Party Apparatus / Org Penalty</strong></td>
+            <td><code style="color: var(--danger);">-0.50</code></td>
+            <td>Identified as an official branch, regional office, or media team rather than an individual.</td>
           </tr>
         </tbody>
       </table>
 
       <div class="callout" style="margin-top: 20px;">
-        <strong>Confidence Tiers:</strong><br>
-        • <strong style="color: #34d399;">HIGH (≥ 0.70)</strong>: Strong identity convergence across name, verified location, and verified party or employment bio.<br>
-        • <strong style="color: #fbbf24;">MEDIUM (0.40 – 0.69)</strong>: Probable match with exact name and platform presence; requires human review of location or bio.<br>
-        • <strong style="color: #f87171;">LOW (&lt; 0.40)</strong>: Candidate name matched, but lacking sufficient corroborating geographic or campaign metadata.
+        <strong>Strict Operational Confidence Tiers:</strong><br>
+        • <strong style="color: #34d399;">HIGH (≥ 0.70)</strong>: Multi-factor verified candidate. Requires full name + granular local town/suburb + confirmed political party or councillor role.<br>
+        • <strong style="color: #fbbf24;">MEDIUM (0.40 – 0.69)</strong>: Probable match with exact name and specific local municipality/town or civic context. Warranted for secondary deep inspection.<br>
+        • <strong style="color: #f87171;">LOW (0.20 – 0.39)</strong>: Tentative match. Name matched with generic country anchor only; unverified without local or party corroboration.<br>
+        • <strong>DISQUALIFIED (&lt; 0.20)</strong>: Discarded as false positive or foreign account.
       </div>
     </div>
 
