@@ -1,11 +1,14 @@
 # PEP Social Intelligence & Popolo Civic Pipeline 🇿🇦
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Live Web App](https://img.shields.io/badge/Live%20App-arf9999.github.io%2FPep__capture-success?style=for-the-badge&logo=github)](https://arf9999.github.io/Pep_capture/)
 [![Popolo Compliant](https://img.shields.io/badge/Standard-Popolo%20Civic%20Data-emerald.svg)](http://www.popoloproject.com/)
 [![SQLite WebAssembly](https://img.shields.io/badge/Database-SQLite%203%20WASM-orange.svg)](https://sql.js.org/)
-[![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages%20Ready-purple.svg)](docs/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-An automated OSINT discovery, verification, and standardization pipeline for Politically Exposed Persons (PEPs) and South African Local Government Election Candidates. The pipeline discovers candidate social media profiles (LinkedIn, Facebook, Instagram, YouTube, TikTok, X/Twitter), performs deep profile page verification, and exports results into a **Popolo-compliant SQLite database** and a **standalone static web application** ready for GitHub Pages.
+> 🌐 **Live Web Application**: **[https://arf9999.github.io/Pep_capture/](https://arf9999.github.io/Pep_capture/)**  
+> 📖 **Process & Research Limitations Explainer**: **[https://arf9999.github.io/Pep_capture/methodology.html](https://arf9999.github.io/Pep_capture/methodology.html)**
+
+An automated OSINT discovery, verification, and standardization pipeline for Politically Exposed Persons (PEPs) and South African Local Government Election Candidates. The pipeline discovers candidate social media profiles (LinkedIn, Facebook, Instagram, YouTube, TikTok, X/Twitter), performs deep profile page verification, and exports results into a **Popolo-compliant SQLite database** and a **standalone static web application** hosted live on GitHub Pages.
 
 ---
 
