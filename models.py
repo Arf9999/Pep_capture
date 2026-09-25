@@ -8,9 +8,10 @@ from pydantic import BaseModel, Field
 
 
 class ConfidenceLevel(str, Enum):
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    LOW = "LOW"
+    PROBABLE = "PROBABLE"      # > 0.70
+    POTENTIAL = "POTENTIAL"    # 0.55 - 0.69
+    POSSIBLE = "POSSIBLE"      # 0.40 - 0.54
+    UNLIKELY = "UNLIKELY"      # < 0.40
 
 
 class Link(BaseModel):

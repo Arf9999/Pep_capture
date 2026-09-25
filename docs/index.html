@@ -273,9 +273,15 @@
       border-radius: 999px;
       display: inline-block;
     }
-    .badge-confidence.high { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .badge-confidence.medium { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge-confidence.low { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-confidence.probable { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-confidence.potential { background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4); }
+    .badge-confidence.possible { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-confidence.unlikely { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+    .score-bar-fill.probable { background: #10b981; }
+    .score-bar-fill.potential { background: #0284c7; }
+    .score-bar-fill.possible { background: #f59e0b; }
+    .score-bar-fill.unlikely { background: #64748b; }
 
     /* Pagination controls */
     .pagination-wrap {
@@ -597,7 +603,7 @@
         <span class="stat-value" style="color: var(--primary);" id="statAccounts">-</span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">High Confidence Matches</span>
+        <span class="stat-label">Probable & Potential Matches</span>
         <span class="stat-value" style="color: var(--success);" id="statHighConf">-</span>
       </div>
       <div class="stat-card">
@@ -629,10 +635,11 @@
         <option value="social_web">Candidate Web</option>
       </select>
       <select id="confidenceFilter" class="select-filter">
-        <option value="">All Confidence</option>
-        <option value="HIGH">High (>= 0.70)</option>
-        <option value="MEDIUM">Medium (0.40 - 0.69)</option>
-        <option value="LOW">Low (< 0.40)</option>
+        <option value="">All Confidence Tiers</option>
+        <option value="PROBABLE">🟢 Probable (> 0.70)</option>
+        <option value="POTENTIAL">🔵 Potential (0.55 - 0.70)</option>
+        <option value="POSSIBLE">🟡 Possible (0.40 - 0.54)</option>
+        <option value="UNLIKELY">⚪ Unlikely (< 0.40)</option>
       </select>
       <select id="partyFilter" class="select-filter">
         <option value="">All Political Parties</option>
@@ -725,7 +732,8 @@
         const stats = await statsRes.json();
         document.getElementById('statPersons').innerText = stats.total_persons.toLocaleString();
         document.getElementById('statAccounts').innerText = stats.total_accounts.toLocaleString();
-        document.getElementById('statHighConf').innerText = (stats.confidence_levels.HIGH || 0).toLocaleString();
+        const verifiedCount = (stats.confidence_levels.PROBABLE || 0) + (stats.confidence_levels.POTENTIAL || 0);
+        document.getElementById('statHighConf').innerText = verifiedCount.toLocaleString();
         document.getElementById('statPlatforms').innerText = Object.keys(stats.platforms).length;
 
         // Populate party filter
@@ -807,7 +815,19 @@
 
       tbody.innerHTML = pageSlice.map(c => {
         const maxConf = c.max_confidence ? Math.round(c.max_confidence * 100) + '%' : 'N/A';
-        const confClass = c.max_confidence >= 0.70 ? 'high' : (c.max_confidence >= 0.40 ? 'medium' : 'low');
+        let confClass = 'unlikely';
+        let tierLabel = 'Unlikely';
+        if (c.max_confidence > 0.70) {
+          confClass = 'probable';
+          tierLabel = 'Probable';
+        } else if (c.max_confidence >= 0.55) {
+          confClass = 'potential';
+          tierLabel = 'Potential';
+        } else if (c.max_confidence >= 0.40) {
+          confClass = 'possible';
+          tierLabel = 'Possible';
+        }
+
         return `
           <tr onclick="openCandidateDetail('${c.id}')">
             <td><span class="badge-id">${c.id}</span></td>
@@ -815,7 +835,7 @@
             <td style="color: var(--text-muted);">${c.party_name || '-'}</td>
             <td style="color: var(--text-muted);">${c.district || '-'}</td>
             <td><span style="font-weight: 600; color: var(--primary);">${c.account_count}</span></td>
-            <td><span class="badge-confidence ${confClass}">${maxConf}</span></td>
+            <td><span class="badge-confidence ${confClass}">${c.account_count > 0 ? `${tierLabel} (${maxConf})` : 'None'}</span></td>
           </tr>
         `;
       }).join('');

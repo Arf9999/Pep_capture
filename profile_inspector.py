@@ -192,12 +192,14 @@ def inspect_profile_deep(
         contact.confidence = new_score
         
         # Upgrade or downgrade confidence level
-        if new_score >= 0.70:
-            contact.confidence_level = ConfidenceLevel.HIGH
+        if new_score > 0.70:
+            contact.confidence_level = ConfidenceLevel.PROBABLE
+        elif new_score >= 0.55:
+            contact.confidence_level = ConfidenceLevel.POTENTIAL
         elif new_score >= 0.40:
-            contact.confidence_level = ConfidenceLevel.MEDIUM
+            contact.confidence_level = ConfidenceLevel.POSSIBLE
         else:
-            contact.confidence_level = ConfidenceLevel.LOW
+            contact.confidence_level = ConfidenceLevel.UNLIKELY
             
         contact.signals.extend(deep_signals)
         contact.rationale += f" [Deep Profile Inspection: {', '.join(deep_signals)} | Adj: {score_delta:+.2f} -> {new_score}]"

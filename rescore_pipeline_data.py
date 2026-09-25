@@ -53,7 +53,7 @@ def rescore_all():
 
     # Track statistics
     total_accounts_after = 0
-    confidence_counts = {"HIGH": 0, "MEDIUM": 0, "LOW": 0}
+    confidence_counts = {"PROBABLE": 0, "POTENTIAL": 0, "POSSIBLE": 0, "UNLIKELY": 0}
     candidates_with_accounts = 0
 
     collection = PopoloCollection()
@@ -71,45 +71,40 @@ def rescore_all():
             "office": p["office"] or ""
         }
 
-        # 1. Fetch raw search results for this person
-        queries = generate_consolidated_candidate_queries(row)
-        raw_items = []
+        parts = [x.strip().lower() for x in re.split(r'[\s,]+', p["name"]) if x.strip()]
+        fn = row["first_name"].lower() or (parts[0] if parts else "")
+        ln = row["last_name"].lower() or (parts[-1] if len(parts) > 1 else "")
+
+        # 1. Fetch raw search results for this person from cache
+        candidate_cache_items = []
         seen_urls = set()
 
-        for q in queries:
-            if q in cache:
-                for item in cache[q]:
-                    u = item.get("link") or item.get("url")
-                    if u and u not in seen_urls:
-                        seen_urls.add(u)
-                        raw_items.append({
-                            "title": item.get("title", ""),
-                            "snippet": item.get("snippet", ""),
-                            "url": u
-                        })
+        if fn and ln:
+            for q, items in cache.items():
+                q_lower = q.lower()
+                if fn in q_lower and ln in q_lower:
+                    for it in items:
+                        u = it.get("link") or it.get("url")
+                        if u and u not in seen_urls:
+                            seen_urls.add(u)
+                            candidate_cache_items.append(it)
 
-        # Also retrieve any existing social account records from DB to ensure nothing is missed
-        cursor.execute("SELECT platform, profile_url, label, rationale, signals, confidence FROM social_accounts WHERE person_id = ?", (person_id,))
-        existing_rows = cursor.fetchall()
-        for er in existing_rows:
-            u = er["profile_url"]
-            if u not in seen_urls:
-                seen_urls.add(u)
-                raw_items.append({
-                    "title": er["label"] or "",
-                    "snippet": er["rationale"] or "",
-                    "url": u
-                })
-
-        # 2. Evaluate all snippets with new disciplined model
+        # 2. Evaluate all snippets with new 4-tier disciplined model & deep inspection
         scored_contacts: Dict[str, ContactDetail] = {}
-        for item in raw_items:
-            plat = get_platform_from_url(item["url"])
-            contact = evaluate_candidate_snippet(row, plat, item)
+        for it in candidate_cache_items:
+            u = it.get("link") or it.get("url")
+            plat = get_platform_from_url(u)
+            s = {"title": it.get("title", ""), "snippet": it.get("snippet", ""), "url": u}
+            contact = evaluate_candidate_snippet(row, plat, s)
             if contact:
+                # Deep profile inspection for potential matches
+                if contact.confidence >= 0.55:
+                    from profile_inspector import inspect_profile_deep
+                    contact = inspect_profile_deep(contact, row)
+
                 # Keep highest score for this specific URL
-                if item["url"] not in scored_contacts or contact.confidence > scored_contacts[item["url"]].confidence:
-                    scored_contacts[item["url"]] = contact
+                if u not in scored_contacts or contact.confidence > scored_contacts[u].confidence:
+                    scored_contacts[u] = contact
 
         final_contacts = list(scored_contacts.values())
         final_contacts.sort(key=lambda c: c.confidence, reverse=True)
@@ -166,10 +161,11 @@ def rescore_all():
     print(f"Total Candidates: {total_persons}")
     print(f"Candidates with Verified Accounts: {candidates_with_accounts} ({candidates_with_accounts/total_persons*100:.1f}%)")
     print(f"Total Accounts Retained: {total_accounts_after}")
-    print(f"Confidence Distribution:")
-    print(f"  🟢 HIGH (>= 0.70):     {confidence_counts['HIGH']}")
-    print(f"  🟡 MEDIUM (0.40-0.69): {confidence_counts['MEDIUM']}")
-    print(f"  ⚪ LOW (0.20-0.39):    {confidence_counts['LOW']}")
+    print(f"Confidence Distribution (4 Tiers):")
+    print(f"  🟢 PROBABLE  (> 0.70):        {confidence_counts['PROBABLE']}")
+    print(f"  🔵 POTENTIAL (0.55 - 0.70):   {confidence_counts['POTENTIAL']}")
+    print(f"  🟡 POSSIBLE  (0.40 - 0.54):   {confidence_counts['POSSIBLE']}")
+    print(f"  ⚪ UNLIKELY  (< 0.40):        {confidence_counts['UNLIKELY']}")
     print("="*50)
 
 

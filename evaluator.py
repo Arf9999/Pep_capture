@@ -363,16 +363,19 @@ def evaluate_candidate_snippet(
     if final_score < 0.20:
         return None
 
-    # Strict Confidence Tier Allocation:
-    # HIGH: >= 0.70 (requires multi-factor: Name + Granular Town/Muni + Party/Civic role)
-    # MEDIUM: 0.40 - 0.69 (Name + specific town OR Name + party)
-    # LOW: 0.20 - 0.39 (Name match only or broad country only)
-    if final_score >= 0.70:
-        level = ConfidenceLevel.HIGH
+    # Strict 4-Tier Granular Confidence Allocation:
+    # PROBABLE:  > 0.70 (Multi-factor: Name + Granular Town/Muni + Party/Civic role)
+    # POTENTIAL: 0.55 - 0.70 (Strong correlation: Name + specific local town/suburb)
+    # POSSIBLE:  0.40 - 0.54 (Moderate correlation: Name + municipality or civic context)
+    # UNLIKELY:  < 0.40 (Tentative match: Name + broad country anchor without local confirmation)
+    if final_score > 0.70:
+        level = ConfidenceLevel.PROBABLE
+    elif final_score >= 0.55:
+        level = ConfidenceLevel.POTENTIAL
     elif final_score >= 0.40:
-        level = ConfidenceLevel.MEDIUM
+        level = ConfidenceLevel.POSSIBLE
     else:
-        level = ConfidenceLevel.LOW
+        level = ConfidenceLevel.UNLIKELY
 
     rationale = (
         f"Target: '{target_name}' in '{target_location}' ({target_party}). "

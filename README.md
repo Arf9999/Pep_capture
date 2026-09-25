@@ -25,16 +25,17 @@ An automated OSINT discovery, verification, and standardization pipeline for Pol
 
 ---
 
-## 📊 Live Discovery Statistics (Disciplined Scoring Model)
+## 📊 Live Discovery Statistics (Granular 4-Tier Model)
 
 | Metric | Status |
 | :--- | :--- |
 | **Total Candidates Ingested** | **1,301** |
-| **Candidates with Verified Accounts** | **250** (19.2%) |
-| **Total Accounts Retained** | **503** |
-| **High Confidence Matches ($\ge 0.70$)** | **3** (Multi-factor: Name + Local Town + Party/Role) |
-| **Medium Confidence Matches ($0.40 - 0.69$)** | **108** (Local Municipality/Town or Civic context) |
-| **Low Confidence Matches ($0.20 - 0.39$)** | **392** (Tentative name match with SA anchor) |
+| **Candidates with Social Accounts** | **248** (19.1%) |
+| **Total Accounts Retained** | **490** |
+| **🟢 Probable (> 0.70)** | **3** (Multi-factor: Name + Local Town + Party/Role) |
+| **🔵 Potential (0.55 – 0.70)** | **19** (Strong correlation: Name + Local Town/Suburb) |
+| **🟡 Possible (0.40 – 0.54)** | **73** (Moderate correlation: Name + Municipality/Civic) |
+| **⚪ Unlikely (< 0.40)** | **395** (Tentative name match with SA anchor only) |
 | **Disqualified / Non-SA False Positives** | **~2,500 dropped** (Lack SA anchor, foreign, or party org) |
 | **SQLite Database Size** | **4.6 MB** (`peps.db`) |
 | **Popolo Collection JSON Size** | **1.5 MB** (`popolo_sa_candidates.json`) |
@@ -192,7 +193,7 @@ All candidates and social media accounts adhere to the [Popolo Project Civic Dat
 | `profile_url` | `TEXT NOT NULL` | Validated profile URL |
 | `label` | `TEXT` | Account display name |
 | `confidence` | `REAL NOT NULL` | Confidence score ($0.0 - 1.0$) |
-| `confidence_level` | `TEXT NOT NULL` | `HIGH`, `MEDIUM`, `LOW` |
+| `confidence_level` | `TEXT NOT NULL` | `PROBABLE` (>0.70), `POTENTIAL` (0.55–0.69), `POSSIBLE` (0.40–0.55), `UNLIKELY` (<0.40) |
 | `rationale` | `TEXT` | Evaluation rationale |
 | `signals` | `TEXT` | JSON list of triggered verification signals |
 | `created_at` | `TIMESTAMP` | Timestamp |
