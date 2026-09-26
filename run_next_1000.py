@@ -16,7 +16,7 @@ WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwYfWCWOVrVutXEX87N3GHYX0
 def main():
     print("=" * 75)
     print("STARTING BATCH: NEXT 1,000 CANDIDATES (pers_21589 -> pers_22588)")
-    print("Researcher: Andrew Fraser | Engine: Google (SerpentAPI)")
+    print("Researcher: Andrew Fraser | Engine: Google + Bing (SerpentAPI Multi-Engine)")
     print("=" * 75)
     
     try:
@@ -27,7 +27,7 @@ def main():
             start_id="pers_21589",
             researcher_filter="Andrew Fraser",
             provider="serpent",
-            engines="google",
+            engines="google,bing",
             max_quota=9000
         )
         print("\n🎉 Completed batch of 1,000 candidates!")

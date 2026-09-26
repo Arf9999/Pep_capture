@@ -148,7 +148,15 @@ def generate_consolidated_candidate_queries(row: Dict[str, str], max_queries: in
 
 # Core Social & Link-in-Bio Platforms
 CORE_SOCIAL_PLATFORMS = [
-    "facebook.com", "linkedin.com/in", "x.com", "instagram.com", "tiktok.com", "youtube.com"
+    "facebook.com/p/",
+    "facebook.com/people/",
+    "facebook.com/profile.php",
+    "facebook.com",
+    "linkedin.com/in",
+    "x.com",
+    "instagram.com",
+    "tiktok.com",
+    "youtube.com"
 ]
 
 LINK_IN_BIO_PLATFORMS = [
