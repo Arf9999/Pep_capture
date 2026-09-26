@@ -225,41 +225,65 @@ class SerpentSearchEngine(SerperSearchEngine):
             }
             req = urllib.request.Request(url, headers=headers)
 
-            try:
-                with urllib.request.urlopen(req, timeout=15) as response:
-                    resp_data = json.loads(response.read().decode("utf-8"))
-                    self._increment_usage()
-                    print(f"    [{engine_name.upper()} via SerpentAPI] Used: {self.usage['queries_used']}/{self.max_daily_limit} today")
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    with urllib.request.urlopen(req, timeout=35) as response:
+                        resp_data = json.loads(response.read().decode("utf-8"))
+                        self._increment_usage()
+                        print(f"    [{engine_name.upper()} via SerpentAPI] Used: {self.usage['queries_used']}/{self.max_daily_limit} today")
 
-                    res_obj = resp_data.get("results", {})
-                    organic = res_obj.get("organic", []) if isinstance(res_obj, dict) else resp_data.get("organic", [])
-                    if not organic and isinstance(resp_data.get("results"), list):
-                        organic = resp_data.get("results")
+                        res_obj = resp_data.get("results", {})
+                        organic = res_obj.get("organic", []) if isinstance(res_obj, dict) else resp_data.get("organic", [])
+                        if not organic and isinstance(resp_data.get("results"), list):
+                            organic = resp_data.get("results")
 
-                    engine_added = 0
-                    for item in organic:
-                        u = item.get("url") or item.get("link", "")
-                        t = item.get("title", "")
-                        s = item.get("snippet") or item.get("description", "")
-                        if u and u.lower() not in seen_urls:
-                            seen_urls.add(u.lower())
-                            all_results.append({
-                                "title": t,
-                                "url": u,
-                                "snippet": s,
-                                "engine": engine_name
-                            })
-                            engine_added += 1
-                    print(f"      → Retrieved {engine_added} distinct results from {engine_name.upper()}.")
+                        engine_added = 0
+                        for item in organic:
+                            u = item.get("url") or item.get("link", "")
+                            t = item.get("title", "")
+                            s = item.get("snippet") or item.get("description", "")
+                            if u and u.lower() not in seen_urls:
+                                seen_urls.add(u.lower())
+                                all_results.append({
+                                    "title": t,
+                                    "url": u,
+                                    "snippet": s,
+                                    "engine": engine_name
+                                })
+                                engine_added += 1
+                        print(f"      → Retrieved {engine_added} distinct results from {engine_name.upper()}.")
+                        break
 
-            except urllib.error.HTTPError as e:
-                err_body = e.read().decode("utf-8", errors="ignore")
-                print(f"    ⚠️ Serpent API ({engine_name}) HTTP Error {e.code}: {err_body}")
-                if e.code in (401, 403):
-                    print("    ⚠️ Account credit limit reached or unauthorized on SerpentAPI.")
-                    break
-            except Exception as e:
-                print(f"    ⚠️ Serpent API ({engine_name}) Request Error: {e}")
+                except urllib.error.HTTPError as e:
+                    err_body = e.read().decode("utf-8", errors="ignore")
+                    print(f"    ⚠️ Serpent API ({engine_name}) HTTP Error {e.code}: {err_body}")
+                    if e.code in (401, 402, 403):
+                        print("    ⚠️ Account credit limit reached or payment required on SerpentAPI.")
+                        raise DailyQuotaExceededError(f"SerpentAPI payment/credit limit: {err_body}")
+                    elif e.code == 429:
+                        if attempt == max_retries - 1:
+                            print("    ⚠️ Serpent API rate limit persisted across all retries.")
+                            raise DailyQuotaExceededError(f"SerpentAPI rate limit reached (HTTP 429): {err_body}")
+                        import time
+                        wait_sec = min(5, 2 * (attempt + 1))
+                        print(f"    ⏳ Soft limit / rate limit (429) hit. Retrying in {wait_sec}s before retry {attempt + 2}/{max_retries}...")
+                        time.sleep(wait_sec)
+                        continue
+                    else:
+                        break
+                except (urllib.error.URLError, TimeoutError, Exception) as e:
+                    err_msg = str(e)
+                    is_timeout = "timed out" in err_msg.lower() or isinstance(e, (TimeoutError, urllib.error.URLError))
+                    if is_timeout and attempt < max_retries - 1:
+                        import time
+                        wait_sec = 3 * (attempt + 1)
+                        print(f"    ⏳ Serpent API ({engine_name}) timed out / network glitch. Retrying attempt {attempt + 2}/{max_retries} in {wait_sec}s...")
+                        time.sleep(wait_sec)
+                        continue
+                    else:
+                        print(f"    ⚠️ Serpent API ({engine_name}) Request Error: {e}")
+                        break
 
         # Save to persistent cache
         if all_results:

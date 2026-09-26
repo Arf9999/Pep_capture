@@ -355,13 +355,7 @@ def evaluate_candidate_snippet(
         score += 0.05
         signals.append("DIRECT_PROFILE_URL")
 
-    # 6. Candidate Verified Email Match (Deterministic Corroboration: +0.45)
-    target_email = pep_info.get("email", "").strip().lower()
-    if target_email and (target_email in combined_snippet_text or target_email in url_lower):
-        score += 0.45
-        signals.append(f"EXACT_EMAIL_MATCH ({target_email})")
-
-    # 7. Candidate Personal Bio Hub Corroboration (Assisting Confidence: +0.25)
+    # 6. Candidate Personal Bio Hub Corroboration (Assisting Confidence: +0.25)
     # Linktree, Beacons, Carrd, Taplink, and Lnk.Bio are NOT targets themselves.
     # But if this social handle was discovered on or linked from the candidate's bio hub,
     # it assists to provide confidence in this outward social profile.

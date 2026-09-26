@@ -33,12 +33,17 @@ def generate_comprehensive_name_permutations(
     - Full: First Middle Last (e.g. Wilko Reimar Kunz)
     - Reverse Full: Last First Middle (e.g. Kunz Wilko Reimar)
     """
-    first = (first_name or "").strip().title()
-    middle = (middle_name or "").strip().title()
-    last = (last_name or "").strip().title()
+    def clean(n: str) -> str:
+        s = re.sub(r'(?i)\bpage\s+\d+\s+of\s+\d+\b', '', n or '').strip()
+        return s.title()
+
+    first = clean(first_name)
+    middle = clean(middle_name)
+    last = clean(last_name)
 
     if not first and not last and full_name_raw:
-        parts = [p.title() for p in re.split(r'[\s\-]+', full_name_raw) if p]
+        cleaned_full = re.sub(r'(?i)\bpage\s+\d+\s+of\s+\d+\b', '', full_name_raw).strip()
+        parts = [p.title() for p in re.split(r'[\s\-]+', cleaned_full) if p]
         if parts:
             first = parts[0]
             last = parts[-1]

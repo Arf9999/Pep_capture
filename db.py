@@ -112,6 +112,9 @@ def upsert_person_with_accounts(person_dict: Dict[str, Any], db_path: str = DB_F
 
     # Insert social accounts
     for cd in person_dict.get("contact_details", []):
+        ctype = cd.get("type", "").lower()
+        if ctype in ("email", "mail"):
+            continue
         signals_str = json.dumps(cd.get("signals", []))
         cursor.execute("""
         INSERT INTO social_accounts (person_id, platform, profile_url, label, confidence, confidence_level, rationale, signals, created_at)
@@ -125,7 +128,7 @@ def upsert_person_with_accounts(person_dict: Dict[str, Any], db_path: str = DB_F
             created_at = excluded.created_at;
         """, (
             person_id,
-            cd.get("type", "").lower(),
+            ctype,
             cd.get("value", ""),
             cd.get("label"),
             float(cd.get("confidence", 0.0)),

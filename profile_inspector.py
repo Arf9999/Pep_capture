@@ -348,13 +348,10 @@ def inspect_profile_deep(
         deep_signals.append(f"OUTWARD_HANDLES_DISCOVERED ({', '.join(extracted_outward[:3])})")
         score_delta += 0.15
 
-    # 6. Extract Candidate Emails from Profile / Link-in-Bio Landing Page
+    # 6. Extract Candidate Emails from Profile / Link-in-Bio Landing Page (tool only, no scoring or note output)
     page_emails = meta.get("emails", [])
     if page_emails:
-        deep_signals.append(f"PAGE_EMAIL_DISCOVERED ({', '.join(page_emails[:2])})")
         setattr(contact, "discovered_emails", page_emails)
-        if not contact.note:
-            contact.note = f"Email: {page_emails[0]}"
 
     # Update ContactDetail
     if deep_signals:

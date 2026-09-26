@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google Sheets Live Sync Preview - persons</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+      color: #202124;
+    }
+    .sheet-bar {
+      background: #fff;
+      padding: 12px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .title-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sheet-icon {
+      width: 28px;
+      height: 28px;
+      background: #0f9d58;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .sheet-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #202124;
+    }
+    .sheet-tab {
+      display: inline-block;
+      padding: 4px 14px;
+      background: #e8f0fe;
+      color: #1967d2;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .legend {
+      padding: 10px 20px;
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .color-swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .table-container {
+      overflow-x: auto;
+      background: #fff;
+      margin: 16px 20px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 6px 10px;
+      text-align: left;
+    }
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+      color: #374151;
+      position: sticky;
+      top: 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    th.col-letter {
+      background: #e5e7eb;
+      text-align: center;
+      color: #6b7280;
+      font-size: 11px;
+      padding: 2px 6px;
+    }
+    td.row-num {
+      background: #f9fafb;
+      text-align: center;
+      color: #6b7280;
+      font-weight: 500;
+      font-size: 11px;
+      width: 35px;
+    }
+    .dropdown-cell {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      background: #f1f3f4;
+      border: 1px solid #dadce0;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #3c4043;
+    }
+    .dropdown-arrow {
+      font-size: 8px;
+      color: #5f6368;
+    }
+    .url-link {
+      color: #1a73e8;
+      text-decoration: none;
+      font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+    }
+    .url-link:hover {
+      text-decoration: underline;
+    }
+    .notes-cell {
+      max-width: 480px;
+      white-space: normal;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sheet-bar">
+    <div class="title-area">
+      <div class="sheet-icon">田</div>
+      <div>
+        <div class="sheet-title">PEP data _ South Africa _ Tables _ 2026 _ Local Government Election Candidates</div>
+        <div style="font-size: 12px; color: #5f6368; margin-top: 2px;">Tab: <span class="sheet-tab">persons</span></div>
+      </div>
+    </div>
+    <div style="font-size: 12px; color: #5f6368;">
+      Sync Engine: <strong>PEP Intelligence Pipeline</strong>
+    </div>
+  </div>
+
+  <div class="legend">
+    <strong style="color: #374151;">Continuous Probability Shading:</strong>
+    <div class="legend-item">
+      <div class="color-swatch" style="background: #FFE599;"></div>
+      <span>Amber (55%–69% Potential)</span>
+    </div>
+    <div class="legend-item">
+      <div class="color-swatch" style="background: #D9EAD3;"></div>
+      <span>Soft Lime (70%–84% Probable)</span>
+    </div>
+    <div class="legend-item">
+      <div class="color-swatch" style="background: #B6D7A8;"></div>
+      <span>Sage Green (85%–100% Confirmed)</span>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-letter"></th>
+          <th class="col-letter">A</th>
+          <th class="col-letter">C</th>
+          <th class="col-letter">I</th>
+          <th class="col-letter">O</th>
+          <th class="col-letter">P</th>
+          <th class="col-letter">Y</th>
+          <th class="col-letter">Z</th>
+          <th class="col-letter">AH</th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>id</th>
+          <th>full_name</th>
+          <th>party_name</th>
+          <th>note_fb</th>
+          <th>fb_url</th>
+          <th>note_li</th>
+          <th>LinkedIn_url</th>
+          <th>notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-num">2</td>
+          <td><code>pers_03</code></td>
+          <td><strong>MLUNGISI JUSTICE SHUSHA</strong></td>
+          <td>African Christian Democratic Party</td>
+          <td><span class="dropdown-cell">Auto_search <span class="dropdown-arrow">▼</span></span></td>
+          <td style="background-color: #F6E6A5;"><a class="url-link" href="https://www.facebook.com/mlungisijustice.shusha/?locale=br_FR" target="_blank">https://facebook.com/mlungisijustice.shusha/</a></td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td class="notes-cell" style="background-color: #F6E6A5;">FB- Potential 60% Full 3-name match, Location match (Margate), Direct profile</td>
+        </tr>
+
+        <tr>
+          <td class="row-num">3</td>
+          <td><code>pers_56</code></td>
+          <td><strong>GOODWILL MFANUFIKILE CELE</strong></td>
+          <td>Al Jama-Ah</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td><span class="dropdown-cell">Auto_search <span class="dropdown-arrow">▼</span></span></td>
+          <td style="background-color: #F6E6A5;"><a class="url-link" href="https://za.linkedin.com/in/goodwill-mfanufikile-cele-371087155" target="_blank">https://za.linkedin.com/in/goodwill-mfanufikile-cele...</a></td>
+          <td class="notes-cell" style="background-color: #F6E6A5;">LI- Potential 65% Full 3-name match, Location match (Port Shepstone), Direct profile</td>
+        </tr>
+
+        <tr>
+          <td class="row-num">4</td>
+          <td><code>pers_84</code></td>
+          <td><strong>SICELO GOODPRESENT CHILIZA</strong></td>
+          <td>Democratic Alliance</td>
+          <td><span class="dropdown-cell">Auto_search <span class="dropdown-arrow">▼</span></span></td>
+          <td style="background-color: #B6D7A8;"><a class="url-link" href="https://www.facebook.com/p/Sicelo-Chiliza-61575767951534/" target="_blank">https://facebook.com/p/Sicelo-Chiliza-61575767951534/</a></td>
+          <td><span class="dropdown-cell">Auto_search <span class="dropdown-arrow">▼</span></span></td>
+          <td style="background-color: #D9EAD3;"><a class="url-link" href="https://za.linkedin.com/in/sicelo-chiliza-a74bb418" target="_blank">https://za.linkedin.com/in/sicelo-chiliza-a74bb418</a></td>
+          <td class="notes-cell" style="background-color: #B6D7A8;">FB- Probable 90% Name match, Province Match, Direct profile; LI- Probable 73% Name match, Province Match</td>
+        </tr>
+
+        <tr>
+          <td class="row-num">5</td>
+          <td><code>pers_09</code></td>
+          <td><strong>ISAAC SIKHUMBUZO MQADI</strong></td>
+          <td>African National Congress</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+        </tr>
+
+        <tr>
+          <td class="row-num">6</td>
+          <td><code>pers_11</code></td>
+          <td><strong>DIXIE NCIKI</strong></td>
+          <td>African National Congress</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td class="notes-cell" style="background-color: #B6D7A8;">WEB- Probable 100% Name match, Location match (Umuziwabantu), Civic role match</td>
+        </tr>
+
+        <tr>
+          <td class="row-num">7</td>
+          <td><code>pers_18</code></td>
+          <td><strong>BONGANI GOODMAN NYUSWA</strong></td>
+          <td>African National Congress</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+          <td style="color: #9ca3af;">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

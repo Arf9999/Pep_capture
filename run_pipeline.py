@@ -180,20 +180,11 @@ def run_pipeline(
                             "url": s_url
                         })
 
-            # Store verified candidate email on Person record
+            # Candidate email is used strictly as a tool for secondary social discovery
             primary_email = sorted(list(candidate_emails))[0] if candidate_emails else None
             if primary_email:
                 person.email = primary_email
-                person.contact_details.append(ContactDetail(
-                    type="email",
-                    value=primary_email,
-                    label="Candidate Verified Contact Email",
-                    confidence=0.95,
-                    confidence_level=ConfidenceLevel.PROBABLE,
-                    rationale=f"Official contact email extracted for {full_name} via civic records / profile metadata.",
-                    signals=["CANDIDATE_EMAIL_EXTRACTED"]
-                ))
-                print(f"  📧 Verified Candidate Email: {primary_email}")
+                print(f"  📧 Discovered Candidate Email (Search Tool): {primary_email}")
 
             # 3. SECONDARY SEARCH: Use extracted email as a secondary search term across social sites!
             secondary_social_results = []
