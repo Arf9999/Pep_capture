@@ -35,6 +35,8 @@ def evaluate_single_result(row, result):
     if not url or is_discovery_hub_url(url):
         return None
     platform = infer_platform_from_url(url)
+    if not platform:
+        return None
     contact = evaluate_candidate_snippet(pep_info=row, platform=platform, search_result=result)
     
     # Secondary validation: fetch actual profile page and examine for deep confirmation

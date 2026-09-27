@@ -26,7 +26,6 @@ PLATFORM_CONFIG = {
     "tiktok": {"url_col": "tiktok_url", "note_col": "note_tk", "note_val": "Verified", "abbrv": "TK"},
     "youtube": {"url_col": "YouTube_url", "note_col": "note_yt", "note_val": "Verified", "abbrv": "YT"},
     "website": {"url_col": "website", "note_col": "note_web", "note_val": "official", "abbrv": "WEB"},
-    "social_web": {"url_col": "website", "note_col": "note_web", "note_val": "official", "abbrv": "WEB"},
     "wikipedia": {"url_col": "wikipedia_url", "note_col": "note_wiki", "note_val": "wikipedia", "abbrv": "WIKI"},
     "whatsapp": {"url_col": "wa_numbers", "note_col": "note_wa", "note_val": "Verified", "abbrv": "WA"},
     "telegram": {"url_col": "telegram", "note_col": "note_te", "note_val": "Verified", "abbrv": "TG"},

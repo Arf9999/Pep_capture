@@ -243,9 +243,10 @@ def evaluate_candidate_snippet(
         "pa.org.za", "linktr.ee", "beacons.ai", "carrd.co", "taplink.cc",
         "lnk.bio", "bio.site", "biosites.com", "pallyy.com"
     ]
-    if any(hub in url_lower for hub in discovery_hub_domains) or platform in (
-        "peoples_assembly", "linktree", "beacons", "carrd", "taplink", "lnk.bio", "biosite", "pallyy"
-    ):
+    VALID_SOCIAL_PLATFORMS = {
+        "facebook", "linkedin", "twitter", "instagram", "tiktok", "youtube", "wikipedia", "telegram", "whatsapp"
+    }
+    if not platform or platform not in VALID_SOCIAL_PLATFORMS:
         return None
 
     signals = []

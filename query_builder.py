@@ -226,8 +226,13 @@ def generate_email_social_query(email: str) -> str:
     return f'"{clean_email}" ({combined_dork})'
 
 
-def infer_platform_from_url(url: str) -> str:
-    """Infers social platform, civic site, or link-in-bio hub type from candidate URL."""
+def infer_platform_from_url(url: str) -> Optional[str]:
+    """
+    Infers candidate social platform, civic site, or link-in-bio hub type from URL.
+    Returns None for non-social websites (e.g. news articles, blogs, directories).
+    """
+    if not url:
+        return None
     u = url.lower()
     if "pa.org.za" in u:
         return "peoples_assembly"
@@ -245,7 +250,7 @@ def infer_platform_from_url(url: str) -> str:
         return "biosite"
     if "pallyy.com" in u:
         return "pallyy"
-    if "facebook.com" in u:
+    if "facebook.com" in u or "fb.com" in u or "fb.me" in u:
         return "facebook"
     if "linkedin.com" in u:
         return "linkedin"
@@ -257,7 +262,11 @@ def infer_platform_from_url(url: str) -> str:
         return "tiktok"
     if "youtube.com" in u or "youtu.be" in u:
         return "youtube"
-    if "t.me" in u:
+    if "wikipedia.org" in u:
+        return "wikipedia"
+    if "t.me" in u or "telegram.me" in u:
         return "telegram"
-    return "social_web"
+    if "wa.me" in u:
+        return "whatsapp"
+    return None
 

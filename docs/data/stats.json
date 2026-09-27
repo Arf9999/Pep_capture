@@ -1,20 +1,20 @@
 {
   "total_persons": 3797,
-  "persons_with_accounts": 346,
-  "total_accounts": 646,
+  "persons_with_accounts": 345,
+  "total_accounts": 642,
   "platforms": {
     "linkedin": 460,
     "facebook": 151,
     "twitter": 17,
     "youtube": 7,
     "instagram": 6,
-    "social_web": 5
+    "wikipedia": 1
   },
   "confidence_levels": {
-    "POSSIBLE": 84,
+    "POSSIBLE": 83,
     "POTENTIAL": 20,
-    "PROBABLE": 10,
-    "UNLIKELY": 532
+    "PROBABLE": 9,
+    "UNLIKELY": 530
   },
   "parties": [
     "Action Save-Bnm",
@@ -123,5 +123,5 @@
     "NW404 - Maquassi Hills",
     "NW405 - JB Marks"
   ],
-  "last_updated": "2026-09-27 15:30 UTC"
+  "last_updated": "2026-09-27 19:34 UTC"
 }
