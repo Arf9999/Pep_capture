@@ -1,11 +1,11 @@
 {
-  "total_persons": 3385,
-  "persons_with_accounts": 341,
-  "total_accounts": 640,
+  "total_persons": 3797,
+  "persons_with_accounts": 346,
+  "total_accounts": 646,
   "platforms": {
-    "linkedin": 456,
-    "facebook": 150,
-    "twitter": 16,
+    "linkedin": 460,
+    "facebook": 151,
+    "twitter": 17,
     "youtube": 7,
     "instagram": 6,
     "social_web": 5
@@ -14,7 +14,7 @@
     "POSSIBLE": 84,
     "POTENTIAL": 20,
     "PROBABLE": 10,
-    "UNLIKELY": 526
+    "UNLIKELY": 532
   },
   "parties": [
     "Action Save-Bnm",
@@ -70,6 +70,7 @@
     "Organic Humanity Movement",
     "Pan Africanist Congress Of Azania",
     "Patriotic Alliance",
+    "Patriotic South Africans",
     "People'S Freedom Party",
     "People'S Movement For Change",
     "Phakama Adelaide Movement",
@@ -116,9 +117,11 @@
     "EC121 - Mbhashe",
     "EC122 - Mnquma",
     "EC122 - Mnquma AFRICAN",
+    "EC123 - Great Kei",
+    "EC124 - Amahlathi",
     "NW403 - Matlosana",
     "NW404 - Maquassi Hills",
     "NW405 - JB Marks"
   ],
-  "last_updated": "2026-09-27 01:55 UTC"
+  "last_updated": "2026-09-27 15:30 UTC"
 }

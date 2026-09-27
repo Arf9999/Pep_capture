@@ -23,8 +23,8 @@ def main():
         run_pipeline(
             csv_file_path=CSV_FILE,
             output_json_path="popolo_sa_candidates.json",
-            limit_records=1000,
-            start_id="pers_21589",
+            limit_records=304,
+            start_id="pers_22285",
             researcher_filter="Andrew Fraser",
             provider="serpent",
             engines="google,bing",
@@ -43,6 +43,15 @@ def main():
             print("✅ Live Google Sheet & CSV synchronized successfully!")
         except Exception as sync_err:
             print(f"⚠️ Sync error: {sync_err}")
+
+        print("\n" + "=" * 75)
+        print("META DETECTION ANALYSIS REPORT (GOOGLE vs. BING)")
+        print("=" * 75)
+        try:
+            from report_meta_comparison import generate_report
+            generate_report()
+        except Exception as rep_err:
+            print(f"⚠️ Comparison report error: {rep_err}")
 
 if __name__ == "__main__":
     main()

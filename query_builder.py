@@ -129,23 +129,6 @@ def get_district_keywords(district_raw: str) -> List[str]:
     return list(dict.fromkeys(keywords))
 
 
-def generate_consolidated_candidate_queries(row: Dict[str, str], max_queries: int = 1) -> List[str]:
-    """
-    Generates high-yield consolidated search query grouping top name order
-    permutations into an OR group combined with social media platform dorks.
-    Serper is configured with gl='za', naturally prioritizing South African results
-    without suffocating profile hits.
-    """
-    name_perms = generate_comprehensive_name_permutations(
-        first_name=row.get("first_name", ""),
-        middle_name=row.get("middle_name", ""),
-        last_name=row.get("last_name", ""),
-        full_name_raw=row.get("full_name", "")
-    )
-
-    if not name_perms:
-        return []
-
 # Core Social & Link-in-Bio Platforms
 CORE_SOCIAL_PLATFORMS = [
     "facebook.com/p/",
@@ -159,11 +142,40 @@ CORE_SOCIAL_PLATFORMS = [
     "youtube.com"
 ]
 
+META_PLATFORMS = [
+    "facebook.com",
+    "instagram.com"
+]
+
 LINK_IN_BIO_PLATFORMS = [
     "linktr.ee", "beacons.ai", "carrd.co", "taplink.cc", "lnk.bio", "bio.site", "pallyy.com"
 ]
 
 ALL_TARGET_PLATFORMS = CORE_SOCIAL_PLATFORMS + LINK_IN_BIO_PLATFORMS
+
+
+def adapt_query_for_meta(query: str) -> str:
+    """
+    Transforms multi-platform or generic queries to target Meta sites only
+    (Facebook and Instagram), stripping LinkedIn, X/Twitter, YouTube, TikTok,
+    and landing hubs for Bing compatibility.
+    """
+    import re
+    # Pattern 1: <prefix> (<site dorks>)
+    m = re.match(r'^(.*?)\s*\((?:\s*site:[^\)]+)\)\s*$', query)
+    if m:
+        prefix = m.group(1).strip()
+        return f"{prefix} (site:facebook.com OR site:instagram.com)"
+    # Pattern 2: query has standalone site:
+    if "site:" in query:
+        cleaned = re.sub(r'site:[^\s\)]+', '', query)
+        cleaned = re.sub(r'\s+OR\s+', ' ', cleaned)
+        cleaned = re.sub(r'[\(\)]', '', cleaned).strip()
+        cleaned = ' '.join(cleaned.split())
+        return f"{cleaned} (site:facebook.com OR site:instagram.com)"
+    # Pattern 3: plain text query
+    return f"{query} (site:facebook.com OR site:instagram.com)"
+
 
 
 

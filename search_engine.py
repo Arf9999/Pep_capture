@@ -205,6 +205,7 @@ class SerpentSearchEngine(SerperSearchEngine):
         base_url = "https://apiserpent.com/api/search/quick"
         all_results = []
         seen_urls = set()
+        meta_detections_by_engine = {e: [] for e in self.engines}
 
         for engine_name in self.engines:
             remaining = self.get_remaining_daily_budget()
@@ -212,8 +213,14 @@ class SerpentSearchEngine(SerperSearchEngine):
                 print(f"    ⚠️ Search budget exhausted ({self.max_daily_limit} queries today).")
                 break
 
+            engine_query = query
+            if engine_name == "bing":
+                from query_builder import adapt_query_for_meta
+                engine_query = adapt_query_for_meta(query)
+                print(f"    [BING Engine Query (Meta only)]: {engine_query}")
+
             params = {
-                "q": query,
+                "q": engine_query,
                 "country": gl,
                 "num": num_results,
                 "engine": engine_name
@@ -243,15 +250,38 @@ class SerpentSearchEngine(SerperSearchEngine):
                             u = item.get("url") or item.get("link", "")
                             t = item.get("title", "")
                             s = item.get("snippet") or item.get("description", "")
-                            if u and u.lower() not in seen_urls:
-                                seen_urls.add(u.lower())
+                            if not u:
+                                continue
+
+                            u_lower = u.lower()
+                            is_meta = ("facebook.com" in u_lower or "instagram.com" in u_lower)
+                            if is_meta and engine_name in meta_detections_by_engine:
+                                meta_detections_by_engine[engine_name].append({
+                                    "url": u,
+                                    "title": t
+                                })
+
+                            # For Bing, strictly restrict to Meta sites (Facebook & Instagram); ignore X, YouTube, LinkedIn, TikTok, etc.
+                            if engine_name == "bing" and not is_meta:
+                                continue
+
+                            if u_lower not in seen_urls:
+                                seen_urls.add(u_lower)
                                 all_results.append({
                                     "title": t,
                                     "url": u,
                                     "snippet": s,
-                                    "engine": engine_name
+                                    "engine": engine_name,
+                                    "engines": [engine_name]
                                 })
                                 engine_added += 1
+                            else:
+                                for existing in all_results:
+                                    if existing.get("url", "").lower() == u_lower:
+                                        existing_engs = existing.setdefault("engines", [existing.get("engine", engine_name)])
+                                        if engine_name not in existing_engs:
+                                            existing_engs.append(engine_name)
+
                         print(f"      → Retrieved {engine_added} distinct results from {engine_name.upper()}.")
                         break
 
@@ -284,6 +314,32 @@ class SerpentSearchEngine(SerperSearchEngine):
                     else:
                         print(f"    ⚠️ Serpent API ({engine_name}) Request Error: {e}")
                         break
+
+        # Log Meta detections comparison between engines if both Google and Bing were queried
+        if "google" in meta_detections_by_engine and "bing" in meta_detections_by_engine:
+            g_meta = meta_detections_by_engine["google"]
+            b_meta = meta_detections_by_engine["bing"]
+            if g_meta or b_meta:
+                g_urls = [x["url"] for x in g_meta]
+                b_urls = [x["url"] for x in b_meta]
+                g_set = set(u.lower().rstrip('/') for u in g_urls)
+                b_set = set(u.lower().rstrip('/') for u in b_urls)
+                comparison_entry = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "query": query,
+                    "google_meta_count": len(g_urls),
+                    "bing_meta_count": len(b_urls),
+                    "google_meta_urls": g_urls,
+                    "bing_meta_urls": b_urls,
+                    "overlap_urls": list(g_set.intersection(b_set)),
+                    "google_only_urls": list(g_set - b_set),
+                    "bing_only_urls": list(b_set - g_set)
+                }
+                try:
+                    with open("cache/meta_detections_comparison.jsonl", "a", encoding="utf-8") as mf:
+                        mf.write(json.dumps(comparison_entry) + "\n")
+                except Exception:
+                    pass
 
         # Save to persistent cache
         if all_results:
