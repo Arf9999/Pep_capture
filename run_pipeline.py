@@ -26,11 +26,12 @@ from profile_inspector import (
     inspect_discovery_hub_and_extract,
     inspect_profile_deep
 )
+from profile_renderer import render_and_upgrade_social_account, get_shared_renderer
 from db import init_database, upsert_person_with_accounts
 
 
 def evaluate_single_result(row, result):
-    """Worker task to evaluate an individual search result with deep profile inspection if confidence >= 0.50."""
+    """Worker task to evaluate an individual search result with Level 2 profile rendering if confidence >= 0.40."""
     url = result.get("url")
     if not url or is_discovery_hub_url(url):
         return None
@@ -39,9 +40,12 @@ def evaluate_single_result(row, result):
         return None
     contact = evaluate_candidate_snippet(pep_info=row, platform=platform, search_result=result)
     
-    # Secondary validation: fetch actual profile page and examine for deep confirmation
-    if contact and contact.confidence >= 0.50:
-        contact = inspect_profile_deep(contact, row)
+    # Level 2 validation: render dynamic profile page with user's persona or inspect page
+    if contact and contact.confidence >= 0.40:
+        if platform in ("facebook", "instagram", "linkedin", "twitter"):
+            contact = render_and_upgrade_social_account(contact, row)
+        elif platform in ("wikipedia", "other"):
+            contact = inspect_profile_deep(contact, row)
         
     return contact
 
@@ -237,6 +241,7 @@ def run_pipeline(
         json.dump(output_data, out_f, indent=2)
 
     print(f"\nCompleted run! Exported Popolo records to '{output_json_path}'.")
+    get_shared_renderer().close()
 
 
 if __name__ == "__main__":

@@ -11,10 +11,10 @@
     "wikipedia": 1
   },
   "confidence_levels": {
-    "POSSIBLE": 83,
-    "POTENTIAL": 20,
-    "PROBABLE": 9,
-    "UNLIKELY": 530
+    "POSSIBLE": 49,
+    "POTENTIAL": 16,
+    "PROBABLE": 45,
+    "UNLIKELY": 532
   },
   "parties": [
     "Action Save-Bnm",
@@ -123,5 +123,5 @@
     "NW404 - Maquassi Hills",
     "NW405 - JB Marks"
   ],
-  "last_updated": "2026-09-27 19:34 UTC"
+  "last_updated": "2026-09-28 06:27 UTC"
 }

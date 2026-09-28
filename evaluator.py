@@ -55,7 +55,7 @@ SA_GEOGRAPHY_TAXONOMY = {
         "province": ["north west", "nw"]
     },
     "buffalo city": {
-        "towns": ["east london", "mdantsane", "king william's town", "king williams town", "qonce", "bhisho", "gonubie", "berlin", "dimbaza"],
+        "towns": ["east london", "mdantsane", "king william's town", "king williams town", "qonce", "bhisho", "bisho", "gonubie", "berlin", "dimbaza"],
         "municipality": ["buffalo city", "buf"],
         "province": ["eastern cape", "ec"]
     },
@@ -158,26 +158,27 @@ def match_geographic_granularity(target_district_raw: str, text: str) -> Tuple[f
 
     has_local_geo = False
     if matched_entry:
-        # Tier 1: Local Town / Suburb
         matched_towns = [t for t in matched_entry["towns"] if re.search(r'\b' + re.escape(t) + r'\b', text_lower)]
+        matched_munis = [m for m in matched_entry["municipality"] if re.search(r'\b' + re.escape(m) + r'\b', text_lower)]
+        matched_provs = [p for p in matched_entry["province"] if re.search(r'\b' + re.escape(p) + r'\b', text_lower)]
+
         if matched_towns:
             score += 0.30
             signals.append(f"LOCAL_TOWN_MATCH ({matched_towns[0].title()})")
             has_local_geo = True
-        else:
-            # Tier 2: Specific Municipality
-            matched_munis = [m for m in matched_entry["municipality"] if re.search(r'\b' + re.escape(m) + r'\b', text_lower)]
             if matched_munis:
-                score += 0.20
+                score += 0.10
                 signals.append(f"MUNICIPALITY_MATCH ({matched_munis[0].title()})")
-                has_local_geo = True
-            else:
-                # Tier 3: Province
-                matched_provs = [p for p in matched_entry["province"] if re.search(r'\b' + re.escape(p) + r'\b', text_lower)]
-                if matched_provs:
-                    score += 0.05
-                    signals.append(f"PROVINCE_MATCH ({matched_provs[0].upper()})")
-                    has_local_geo = True
+        elif matched_munis:
+            # Tier 2: Specific Municipality
+            score += 0.20
+            signals.append(f"MUNICIPALITY_MATCH ({matched_munis[0].title()})")
+            has_local_geo = True
+        elif matched_provs:
+            # Tier 3: Province
+            score += 0.05
+            signals.append(f"PROVINCE_MATCH ({matched_provs[0].upper()})")
+            has_local_geo = True
 
     # 3. Check for South African Anchor
     has_sa_anchor = has_local_geo or any(re.search(r'\b' + re.escape(a) + r'\b', text_lower) for a in SOUTH_AFRICA_ANCHORS)
