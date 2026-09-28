@@ -50,12 +50,18 @@ def build_site():
     c.execute("SELECT DISTINCT district FROM persons WHERE district IS NOT NULL AND district != '' ORDER BY district")
     districts = [r[0] for r in c.fetchall()]
 
+    c.execute("SELECT coalesce(human_verification, 'unreviewed') as status, count(*) FROM social_accounts GROUP BY human_verification")
+    verif_counts = dict(c.fetchall())
+    for k in ("verified", "rejected", "unreviewed"):
+        verif_counts.setdefault(k, 0)
+
     stats_data = {
         "total_persons": total_persons,
         "persons_with_accounts": persons_with_accounts,
         "total_accounts": total_accounts,
         "platforms": platform_counts,
         "confidence_levels": conf_counts,
+        "human_verifications": verif_counts,
         "parties": parties,
         "districts": districts,
         "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -80,7 +86,8 @@ def build_site():
 
     # Fetch all social accounts mapped by person_id
     c.execute("""
-        SELECT person_id, platform, profile_url, label, confidence, confidence_level, rationale, signals
+        SELECT id, person_id, platform, profile_url, label, confidence, confidence_level, rationale, signals,
+               coalesce(human_verification, 'unreviewed') as human_verification, verified_at, verified_notes
         FROM social_accounts
         ORDER BY confidence DESC, platform ASC
     """)
@@ -97,13 +104,17 @@ def build_site():
             sigs = [sig_raw] if sig_raw else []
 
         accounts_by_person[pid].append({
+            "id": acc["id"],
             "platform": acc["platform"],
             "profile_url": acc["profile_url"],
             "label": acc["label"],
             "confidence": float(acc["confidence"]),
             "confidence_level": acc["confidence_level"],
             "rationale": acc["rationale"] or "",
-            "signals": sigs
+            "signals": sigs,
+            "human_verification": acc["human_verification"],
+            "verified_at": acc["verified_at"],
+            "verified_notes": acc["verified_notes"] or ""
         })
 
     candidates_list = []

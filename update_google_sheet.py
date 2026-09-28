@@ -52,9 +52,11 @@ def fetch_high_confidence_accounts(
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT person_id, platform, profile_url, label, confidence, confidence_level, rationale, signals
+    SELECT person_id, platform, profile_url, label, confidence, confidence_level, rationale, signals,
+           coalesce(human_verification, 'unreviewed') as human_verification
     FROM social_accounts
-    WHERE confidence >= ? AND platform != 'email'
+    WHERE ((confidence >= ? AND human_verification != 'rejected') OR human_verification = 'verified')
+      AND platform != 'email'
     ORDER BY person_id, confidence DESC;
     """, (min_confidence,))
 
@@ -66,15 +68,33 @@ def fetch_high_confidence_accounts(
             continue
         if pid not in results:
             results[pid] = {}
-        # Keep highest scoring account for this platform
-        if plat not in results[pid] or row["confidence"] > results[pid][plat]["confidence"]:
+        
+        # Determine priority: human verified accounts take precedence
+        curr = results[pid].get(plat)
+        is_human_verif = (row["human_verification"] == "verified")
+        curr_is_human = (curr.get("human_verification") == "verified") if curr else False
+
+        should_replace = False
+        if not curr:
+            should_replace = True
+        elif is_human_verif and not curr_is_human:
+            should_replace = True
+        elif (is_human_verif == curr_is_human) and (row["confidence"] > curr["confidence"]):
+            should_replace = True
+
+        if should_replace:
+            rat = row["rationale"] or ""
+            if is_human_verif and "[Human Verified]" not in rat:
+                rat = f"[Human Verified] {rat}"
+
             results[pid][plat] = {
                 "url": row["profile_url"],
                 "confidence": row["confidence"],
                 "confidence_level": row["confidence_level"],
-                "rationale": row["rationale"],
+                "rationale": rat,
                 "signals": row["signals"],
-                "label": row["label"]
+                "label": row["label"],
+                "human_verification": row["human_verification"]
             }
 
     conn.close()

@@ -8,7 +8,7 @@ import json
 import functools
 import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from db import init_database, query_person_by_id, search_peps, get_summary_stats
+from db import init_database, query_person_by_id, search_peps, get_summary_stats, update_account_verification
 
 PORT = 9090
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -23,6 +23,47 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(body)
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
+    def do_POST(self):
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
+
+        if path == "/api/verify":
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length)
+                data = json.loads(body.decode("utf-8"))
+
+                account_id = data.get("account_id")
+                person_id = data.get("person_id")
+                profile_url = data.get("profile_url")
+                status = data.get("status", "verified")
+                notes = data.get("notes", "")
+
+                success = update_account_verification(
+                    account_id=account_id,
+                    person_id=person_id,
+                    profile_url=profile_url,
+                    status=status,
+                    notes=notes
+                )
+                if success:
+                    stats = get_summary_stats()
+                    self._send_json({"success": True, "status": status, "stats": stats})
+                else:
+                    self._send_json({"error": "Account not found or update failed"}, status=404)
+            except Exception as e:
+                self._send_json({"error": str(e)}, status=400)
+            return
+
+        self._send_json({"error": "Not found"}, status=404)
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
@@ -40,6 +81,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             q = query_params.get("q", [""])[0]
             platform = query_params.get("platform", [""])[0]
             confidence = query_params.get("confidence", [""])[0]
+            verification = query_params.get("verification", [""])[0]
             limit = int(query_params.get("limit", [50])[0])
             offset = int(query_params.get("offset", [0])[0])
 
@@ -47,6 +89,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 query_text=q,
                 platform_filter=platform,
                 confidence_filter=confidence,
+                verification_filter=verification,
                 limit=limit,
                 offset=offset
             )

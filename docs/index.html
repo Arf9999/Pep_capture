@@ -94,6 +94,7 @@
       display: flex;
       gap: 10px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .nav-btn {
@@ -104,50 +105,59 @@
       border-radius: 8px;
       font-size: 13px;
       font-weight: 500;
-      cursor: pointer;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      cursor: pointer;
       transition: all 0.2s ease;
     }
     .nav-btn:hover {
       background: var(--surface-hover);
-      border-color: var(--primary);
+      border-color: rgba(56, 189, 248, 0.4);
       color: #fff;
     }
     .nav-btn.primary {
-      background: linear-gradient(135deg, #0284c7, #4f46e5);
-      border-color: transparent;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border: none;
       color: #fff;
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.3);
     }
     .nav-btn.primary:hover {
-      box-shadow: 0 0 12px var(--primary-glow);
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+    }
+    .nav-btn.success {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    .nav-btn.success:hover {
+      background: rgba(16, 185, 129, 0.25);
+      color: #fff;
     }
 
     main {
+      flex: 1;
       padding: 32px;
-      max-width: 1440px;
+      max-width: 1650px;
       margin: 0 auto;
       width: 100%;
-      flex: 1;
     }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 16px;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
-
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 18px 20px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       position: relative;
       overflow: hidden;
       transition: transform 0.2s ease, border-color 0.2s ease;
@@ -157,14 +167,14 @@
       border-color: rgba(56, 189, 248, 0.4);
     }
     .stat-label {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .stat-value {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 700;
       letter-spacing: -0.03em;
     }
@@ -214,7 +224,7 @@
       font-size: 14px;
       outline: none;
       cursor: pointer;
-      min-width: 150px;
+      min-width: 160px;
     }
     .select-filter:focus {
       border-color: var(--primary);
@@ -236,79 +246,246 @@
     }
     th {
       background: rgba(255, 255, 255, 0.02);
-      padding: 16px 20px;
+      padding: 14px 18px;
       color: var(--text-muted);
       font-weight: 500;
-      font-size: 12px;
+      font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border-bottom: 1px solid var(--surface-border);
+      white-space: nowrap;
     }
     td {
-      padding: 16px 20px;
+      padding: 14px 18px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       vertical-align: middle;
     }
-    tbody tr {
+    tr.candidate-row {
       cursor: pointer;
       transition: background 0.15s ease;
     }
-    tbody tr:hover {
+    tr.candidate-row:hover {
       background: var(--surface-hover);
     }
 
     .badge-id {
       font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--primary);
-      background: rgba(56, 189, 248, 0.1);
-      padding: 4px 8px;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--surface-border);
+      padding: 3px 7px;
       border-radius: 6px;
-      border: 1px solid rgba(56, 189, 248, 0.2);
+      color: #94a3b8;
+      display: inline-block;
     }
+
     .badge-confidence {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 12px;
       font-weight: 600;
       padding: 4px 10px;
       border-radius: 999px;
-      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
-    .badge-confidence.probable { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .badge-confidence.potential { background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4); }
-    .badge-confidence.possible { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-    .badge-confidence.unlikely { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .badge-confidence.probable {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-confidence.potential {
+      background: rgba(14, 165, 233, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+    .badge-confidence.possible {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-confidence.unlikely {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
 
-    .score-bar-fill.probable { background: #10b981; }
-    .score-bar-fill.potential { background: #0284c7; }
-    .score-bar-fill.possible { background: #f59e0b; }
-    .score-bar-fill.unlikely { background: #64748b; }
+    /* Surfaced Account Items in Table Rows */
+    .row-accounts-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 320px;
+      max-width: 600px;
+    }
+    .row-account-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+    .row-account-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    .row-account-item.is-verified {
+      border-color: rgba(16, 185, 129, 0.45);
+      background: rgba(16, 185, 129, 0.08);
+    }
+    .row-account-item.is-rejected {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.06);
+      opacity: 0.75;
+    }
 
-    /* Pagination controls */
+    .platform-mini-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .platform-facebook { background: #1877f2; color: #fff; }
+    .platform-instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; }
+    .platform-linkedin { background: #0a66c2; color: #fff; }
+    .platform-twitter { background: #000; color: #fff; border: 1px solid #475569; }
+    .platform-youtube { background: #ff0000; color: #fff; }
+    .platform-tiktok { background: #010101; color: #00f2fe; }
+    .platform-wikipedia { background: #334155; color: #fff; }
+
+    .row-account-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      max-width: 230px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s;
+    }
+    .row-account-link:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+    .ext-icon {
+      font-size: 10px;
+      opacity: 0.7;
+    }
+
+    .badge-mini-confidence {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    /* Verification Controls */
+    .verif-btn-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .verif-btn {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.15s ease;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+    .verif-btn.verify-btn:hover {
+      background: rgba(16, 185, 129, 0.25);
+      color: #10b981;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    .verif-btn.verify-btn.active {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+    .verif-btn.reject-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .verif-btn.reject-btn.active {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+    }
+
+    .verif-status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .status-unreviewed {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+    }
+    .status-verified {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .status-rejected {
+      background: rgba(239, 68, 68, 0.18);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
     .pagination-wrap {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 16px 20px;
       border-top: 1px solid var(--surface-border);
-      color: var(--text-muted);
-      font-size: 13px;
+      background: rgba(255, 255, 255, 0.01);
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    .pagination-btns {
-      display: flex;
-      gap: 8px;
-    }
+    #paginationSummary { font-size: 13px; color: var(--text-muted); }
+    .pagination-btns { display: flex; gap: 8px; }
     .page-btn {
       background: var(--surface);
       border: 1px solid var(--surface-border);
       color: var(--text);
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: 8px;
       font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
     .page-btn:hover:not(:disabled) {
-      border-color: var(--primary);
       background: var(--surface-hover);
+      border-color: var(--primary);
     }
     .page-btn:disabled {
       opacity: 0.4;
@@ -326,32 +503,27 @@
       justify-content: flex-end;
     }
     .drawer-overlay.active { display: flex; }
-
     .drawer {
-      background: var(--surface);
       width: 100%;
-      max-width: 650px;
+      max-width: 720px;
+      background: var(--surface);
       height: 100%;
       border-left: 1px solid var(--surface-border);
-      padding: 32px;
-      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 24px;
       box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-      animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: slideIn 0.25s ease-out;
     }
     @keyframes slideIn {
       from { transform: translateX(100%); }
       to { transform: translateX(0); }
     }
-
     .drawer-header {
+      padding: 24px;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       border-bottom: 1px solid var(--surface-border);
-      padding-bottom: 16px;
     }
     .drawer-title { font-size: 20px; font-weight: 700; color: #fff; }
     .drawer-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
@@ -364,6 +536,12 @@
     }
     .close-btn:hover { color: #fff; }
 
+    .drawer-content {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
     .account-card {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--surface-border);
@@ -372,19 +550,89 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s ease;
     }
+    .account-card.is-verified {
+      border-color: rgba(16, 185, 129, 0.45);
+      background: rgba(16, 185, 129, 0.03);
+    }
+    .account-card.is-rejected {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.03);
+      opacity: 0.85;
+    }
+
     .account-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .platform-name {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--primary);
+    }
+
+    /* Verification Box inside Drawer */
+    .drawer-verif-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .drawer-verif-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .drawer-verif-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .drawer-verif-btn.verify {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    .drawer-verif-btn.verify:hover, .drawer-verif-btn.verify.active {
+      background: #10b981;
+      color: #fff;
+    }
+    .drawer-verif-btn.reject {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+    .drawer-verif-btn.reject:hover, .drawer-verif-btn.reject.active {
+      background: #ef4444;
+      color: #fff;
+    }
+    .drawer-verif-btn.reset {
+      background: rgba(148, 163, 184, 0.1);
+      border-color: rgba(148, 163, 184, 0.2);
+      color: #94a3b8;
+    }
+    .drawer-verif-btn.reset:hover {
+      background: rgba(148, 163, 184, 0.2);
+      color: #fff;
     }
 
     .score-meter-wrap { margin-top: 2px; }
@@ -399,9 +647,10 @@
       border-radius: 999px;
       transition: width 0.3s ease;
     }
-    .score-bar-fill.high { background: #10b981; }
-    .score-bar-fill.medium { background: #f59e0b; }
-    .score-bar-fill.low { background: #ef4444; }
+    .score-bar-fill.probable { background: #10b981; }
+    .score-bar-fill.potential { background: #38bdf8; }
+    .score-bar-fill.possible { background: #f59e0b; }
+    .score-bar-fill.unlikely { background: #94a3b8; }
 
     .url-row {
       display: flex;
@@ -415,8 +664,11 @@
       word-break: break-all;
       text-decoration: none;
       flex: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .account-url:hover { text-decoration: underline; }
+    .account-url:hover { text-decoration: underline; color: #fff; }
 
     .copy-btn {
       background: rgba(56, 189, 248, 0.1);
@@ -433,9 +685,7 @@
       transition: all 0.15s ease;
       white-space: nowrap;
     }
-    .copy-btn:hover {
-      background: rgba(56, 189, 248, 0.2);
-    }
+    .copy-btn:hover { background: rgba(56, 189, 248, 0.2); }
     .copy-btn.copied {
       background: rgba(16, 185, 129, 0.2);
       color: #34d399;
@@ -448,38 +698,34 @@
       border-radius: 8px;
       padding: 10px 12px;
       font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
     }
     .criteria-title {
       font-weight: 600;
-      color: #cbd5e1;
+      color: #fff;
+      margin-bottom: 8px;
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .criteria-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 4px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
     }
     .criteria-item {
       display: flex;
-      justify-content: space-between;
-      color: #94a3b8;
+      flex-direction: column;
+      gap: 2px;
     }
-    .criteria-value {
-      font-weight: 500;
-      color: #e2e8f0;
-    }
+    .criteria-label { font-size: 11px; color: var(--text-muted); }
+    .criteria-value { font-size: 12px; font-weight: 500; color: #e2e8f0; }
 
     .rationale {
       font-size: 12px;
       line-height: 1.5;
       color: #cbd5e1;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.015);
+      padding: 8px 12px;
       border-radius: 6px;
       border-left: 3px solid var(--primary);
     }
@@ -490,13 +736,13 @@
       gap: 6px;
     }
     .signal-chip {
+      font-size: 10px;
       font-family: var(--font-mono);
-      font-size: 11px;
-      color: #94a3b8;
-      background: rgba(255, 255, 255, 0.04);
-      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
       border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #94a3b8;
     }
 
     pre.popolo-json {
@@ -586,6 +832,9 @@
     </div>
     <div class="nav-actions">
       <a href="methodology.html" class="nav-btn">📖 Methodology & Limitations</a>
+      <button class="nav-btn success" onclick="exportVerifications()">📥 Export Verifications</button>
+      <button class="nav-btn" onclick="document.getElementById('importVerifFile').click()">📤 Import</button>
+      <input type="file" id="importVerifFile" accept=".json" style="display: none;" onchange="handleImportVerifications(event)">
       <button class="nav-btn" onclick="openSqlModal()">⚡ SQL Query Console</button>
       <a href="data/peps.db" download class="nav-btn primary">💾 Download SQLite (peps.db)</a>
       <a href="data/popolo_sa_candidates.json" download class="nav-btn">📥 Popolo JSON</a>
@@ -603,38 +852,48 @@
         <span class="stat-value" style="color: var(--primary);" id="statAccounts">-</span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">Probable & Potential Matches</span>
-        <span class="stat-value" style="color: var(--success);" id="statHighConf">-</span>
+        <span class="stat-label">Probable & Potential</span>
+        <span class="stat-value" style="color: #38bdf8;" id="statHighConf">-</span>
       </div>
-      <div class="stat-card">
-        <span class="stat-label">Platforms Covered</span>
-        <span class="stat-value" style="color: #a78bfa;" id="statPlatforms">-</span>
+      <div class="stat-card" style="border-color: rgba(16, 185, 129, 0.3);">
+        <span class="stat-label">Human Verified (✓)</span>
+        <span class="stat-value" style="color: var(--success);" id="statHumanVerified">0</span>
+      </div>
+      <div class="stat-card" style="border-color: rgba(239, 68, 68, 0.3);">
+        <span class="stat-label">Human Rejected (✗)</span>
+        <span class="stat-value" style="color: var(--danger);" id="statHumanRejected">0</span>
       </div>
     </div>
 
     <div class="controls-bar">
       <div class="search-input-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search by Candidate Name, pers_xxx ID, Party, or District...">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by Candidate Name, pers_xxx ID, Party, or District..." oninput="filterCandidates()">
       </div>
-      <select id="platformFilter" class="select-filter">
-        <option value="">All Social Media Platforms</option>
-        <option value="linkedin">LinkedIn</option>
+      <select id="platformFilter" class="select-filter" onchange="filterCandidates()">
+        <option value="">All Social Platforms</option>
         <option value="facebook">Facebook</option>
-        <option value="twitter">Twitter / X</option>
         <option value="instagram">Instagram</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="twitter">Twitter / X</option>
         <option value="youtube">YouTube</option>
         <option value="tiktok">TikTok</option>
         <option value="wikipedia">Wikipedia</option>
       </select>
-      <select id="confidenceFilter" class="select-filter">
+      <select id="confidenceFilter" class="select-filter" onchange="filterCandidates()">
         <option value="">All Confidence Tiers</option>
         <option value="PROBABLE">🟢 Probable (> 0.70)</option>
         <option value="POTENTIAL">🔵 Potential (0.55 - 0.70)</option>
         <option value="POSSIBLE">🟡 Possible (0.40 - 0.54)</option>
         <option value="UNLIKELY">⚪ Unlikely (< 0.40)</option>
       </select>
-      <select id="partyFilter" class="select-filter">
+      <select id="verificationFilter" class="select-filter" onchange="filterCandidates()">
+        <option value="">All Verification States</option>
+        <option value="verified">✅ Human Verified Only</option>
+        <option value="rejected">❌ Human Rejected Only</option>
+        <option value="unreviewed">⏳ Unreviewed Only</option>
+      </select>
+      <select id="partyFilter" class="select-filter" onchange="filterCandidates()">
         <option value="">All Political Parties</option>
       </select>
     </div>
@@ -647,8 +906,8 @@
             <th>Full Name</th>
             <th>Party</th>
             <th>District / Municipality</th>
-            <th>Accounts Found</th>
-            <th>Max Confidence</th>
+            <th>Surfaced Social Profiles (Click to Open Tab)</th>
+            <th>Verification & Rating</th>
           </tr>
         </thead>
         <tbody id="candidatesTableBody">
@@ -677,7 +936,7 @@
       </div>
       <div class="drawer-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Discovered Social Accounts</h4>
+          <h4 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Surfaced Accounts & Human Verification</h4>
           <button class="copy-btn" id="copyAllBtn" onclick="copyAllAccountUrls()" style="display: none;">📋 Copy All URLs</button>
         </div>
         <div id="drawerAccountsList"></div>
@@ -698,7 +957,7 @@
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
         Query the bundled <code>peps.db</code> SQLite database directly inside your browser using WebAssembly.
       </p>
-      <textarea id="sqlQueryInput" class="sql-input">SELECT platform, count(*) as count FROM social_accounts GROUP BY platform ORDER BY count DESC;</textarea>
+      <textarea id="sqlQueryInput" class="sql-input">SELECT platform, coalesce(human_verification, 'unreviewed') as status, count(*) as count FROM social_accounts GROUP BY platform, status ORDER BY count DESC;</textarea>
       <div style="display: flex; gap: 10px; align-items: center;">
         <button class="nav-btn primary" id="runSqlBtn" onclick="executeSql()">▶ Run Query</button>
         <span id="sqlStatus" style="font-size: 12px; color: var(--text-muted);"></span>
@@ -717,17 +976,24 @@
     let currentPage = 1;
     const pageSize = 50;
     let sqlDb = null;
+    let localVerifications = {};
+
+    // Load persisted verifications from localStorage
+    try {
+      localVerifications = JSON.parse(localStorage.getItem('pep_verifications') || '{}');
+    } catch (e) {
+      localVerifications = {};
+    }
 
     async function init() {
       try {
         // Load stats
         const statsRes = await fetch('data/stats.json');
         const stats = await statsRes.json();
-        document.getElementById('statPersons').innerText = stats.total_persons.toLocaleString();
-        document.getElementById('statAccounts').innerText = stats.total_accounts.toLocaleString();
-        const verifiedCount = (stats.confidence_levels.PROBABLE || 0) + (stats.confidence_levels.POTENTIAL || 0);
-        document.getElementById('statHighConf').innerText = verifiedCount.toLocaleString();
-        document.getElementById('statPlatforms').innerText = Object.keys(stats.platforms).length;
+        document.getElementById('statPersons').innerText = (stats.total_persons || 0).toLocaleString();
+        document.getElementById('statAccounts').innerText = (stats.total_accounts || 0).toLocaleString();
+        const highConfCount = ((stats.confidence_levels || {}).PROBABLE || 0) + ((stats.confidence_levels || {}).POTENTIAL || 0);
+        document.getElementById('statHighConf').innerText = highConfCount.toLocaleString();
 
         // Populate party filter
         const partySelect = document.getElementById('partyFilter');
@@ -743,6 +1009,20 @@
         // Load candidates
         const candRes = await fetch('data/candidates.json');
         allCandidates = await candRes.json();
+
+        // Merge any localStorage verifications
+        allCandidates.forEach(c => {
+          (c.social_accounts || []).forEach(a => {
+            if (localVerifications[a.profile_url]) {
+              a.human_verification = localVerifications[a.profile_url].status;
+              a.verified_at = localVerifications[a.profile_url].timestamp;
+            } else if (!a.human_verification) {
+              a.human_verification = 'unreviewed';
+            }
+          });
+        });
+
+        recomputeStats();
         filterCandidates();
       } catch (err) {
         console.error("Failed to load static datasets:", err);
@@ -750,10 +1030,24 @@
       }
     }
 
+    function recomputeStats() {
+      let verifiedCount = 0;
+      let rejectedCount = 0;
+      allCandidates.forEach(c => {
+        (c.social_accounts || []).forEach(a => {
+          if (a.human_verification === 'verified') verifiedCount++;
+          else if (a.human_verification === 'rejected') rejectedCount++;
+        });
+      });
+      document.getElementById('statHumanVerified').innerText = verifiedCount.toLocaleString();
+      document.getElementById('statHumanRejected').innerText = rejectedCount.toLocaleString();
+    }
+
     function filterCandidates() {
       const q = document.getElementById('searchInput').value.toLowerCase().trim();
       const platform = document.getElementById('platformFilter').value.toLowerCase();
       const confidence = document.getElementById('confidenceFilter').value.toUpperCase();
+      const verification = document.getElementById('verificationFilter').value.toLowerCase();
       const party = document.getElementById('partyFilter').value;
 
       filteredCandidates = allCandidates.filter(c => {
@@ -776,6 +1070,20 @@
         if (confidence) {
           const hasConf = c.social_accounts && c.social_accounts.some(a => a.confidence_level === confidence);
           if (!hasConf) return false;
+        }
+
+        // Verification match
+        if (verification) {
+          if (verification === 'verified') {
+            const hasVerif = c.social_accounts && c.social_accounts.some(a => a.human_verification === 'verified');
+            if (!hasVerif) return false;
+          } else if (verification === 'rejected') {
+            const hasRej = c.social_accounts && c.social_accounts.some(a => a.human_verification === 'rejected');
+            if (!hasRej) return false;
+          } else if (verification === 'unreviewed') {
+            const hasUnrev = c.social_accounts && c.social_accounts.some(a => !a.human_verification || a.human_verification === 'unreviewed');
+            if (!hasUnrev) return false;
+          }
         }
 
         // Party match
@@ -821,14 +1129,74 @@
           tierLabel = 'Possible';
         }
 
+        // Render surfaced accounts pill list with direct click-through and verification checkboxes
+        let accountsHtml = '<span style="color: var(--text-muted); font-size: 13px;">No accounts surfaced</span>';
+        if (c.social_accounts && c.social_accounts.length > 0) {
+          accountsHtml = `<div class="row-accounts-container">` + c.social_accounts.map(acc => {
+            const accUrl = acc.profile_url;
+            const pForm = (acc.platform || 'web').toLowerCase();
+            const verifStatus = acc.human_verification || 'unreviewed';
+            const isVerified = verifStatus === 'verified';
+            const isRejected = verifStatus === 'rejected';
+            const itemClass = isVerified ? 'is-verified' : (isRejected ? 'is-rejected' : '');
+
+            // Truncate clean display label
+            let displayLabel = accUrl.replace(/^https?:\/\/(www\.|m\.)?/, '').replace(/\/$/, '');
+            if (displayLabel.length > 36) {
+              displayLabel = displayLabel.slice(0, 34) + '…';
+            }
+
+            const confBadgeClass = acc.confidence_level ? acc.confidence_level.toLowerCase() : 'unlikely';
+            const confPct = Math.round(acc.confidence * 100);
+
+            return `
+              <div class="row-account-item ${itemClass}">
+                <span class="platform-mini-tag platform-${pForm}">${pForm}</span>
+                <a href="${accUrl}" target="_blank" rel="noopener noreferrer" class="row-account-link" onclick="event.stopPropagation()" title="Open profile in new tab: ${accUrl}">
+                  ${displayLabel} <span class="ext-icon">↗</span>
+                </a>
+                <span class="badge-mini-confidence badge-confidence ${confBadgeClass}">${confPct}%</span>
+                <div class="verif-btn-group" onclick="event.stopPropagation()">
+                  <button class="verif-btn verify-btn ${isVerified ? 'active' : ''}" 
+                          title="${isVerified ? 'Click to unverify' : 'Verify Account (Human Confirmed)'}" 
+                          onclick="toggleVerification('${acc.id || ''}', '${c.id}', '${accUrl}', 'verified', event)">
+                    ✓
+                  </button>
+                  <button class="verif-btn reject-btn ${isRejected ? 'active' : ''}" 
+                          title="${isRejected ? 'Click to un-reject' : 'Reject Account (False Positive)'}" 
+                          onclick="toggleVerification('${acc.id || ''}', '${c.id}', '${accUrl}', 'rejected', event)">
+                    ✗
+                  </button>
+                </div>
+                <span class="verif-status-badge status-${verifStatus}">
+                  ${isVerified ? 'Verified' : (isRejected ? 'Rejected' : 'Unreviewed')}
+                </span>
+              </div>
+            `;
+          }).join('') + `</div>`;
+        }
+
+        // Summary verification tag
+        const verifCount = (c.social_accounts || []).filter(a => a.human_verification === 'verified').length;
+        const rejCount = (c.social_accounts || []).filter(a => a.human_verification === 'rejected').length;
+        let candidateVerifSummary = '';
+        if (verifCount > 0) {
+          candidateVerifSummary = `<span style="color: #34d399; font-size: 11px; font-weight: 600; display: block; margin-top: 4px;">✓ ${verifCount} Verified</span>`;
+        } else if (rejCount > 0) {
+          candidateVerifSummary = `<span style="color: #f87171; font-size: 11px; font-weight: 600; display: block; margin-top: 4px;">✗ ${rejCount} Rejected</span>`;
+        }
+
         return `
-          <tr onclick="openCandidateDetail('${c.id}')">
+          <tr class="candidate-row" onclick="openCandidateDetail('${c.id}')">
             <td><span class="badge-id">${c.id}</span></td>
             <td style="font-weight: 600;">${c.name}</td>
             <td style="color: var(--text-muted);">${c.party_name || '-'}</td>
             <td style="color: var(--text-muted);">${c.district || '-'}</td>
-            <td><span style="font-weight: 600; color: var(--primary);">${c.account_count}</span></td>
-            <td><span class="badge-confidence ${confClass}">${c.account_count > 0 ? `${tierLabel} (${maxConf})` : 'None'}</span></td>
+            <td>${accountsHtml}</td>
+            <td>
+              <span class="badge-confidence ${confClass}">${c.account_count > 0 ? `${tierLabel} (${maxConf})` : 'None'}</span>
+              ${candidateVerifSummary}
+            </td>
           </tr>
         `;
       }).join('');
@@ -842,6 +1210,54 @@
       currentPage += delta;
       renderTable();
       window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+
+    async function toggleVerification(accId, personId, url, targetStatus, event) {
+      if (event) event.stopPropagation();
+
+      const candidate = allCandidates.find(c => c.id === personId);
+      if (!candidate || !candidate.social_accounts) return;
+
+      const acc = candidate.social_accounts.find(a => (accId && a.id == accId) || a.profile_url === url);
+      if (!acc) return;
+
+      // Toggle off if already active
+      const newStatus = (acc.human_verification === targetStatus) ? 'unreviewed' : targetStatus;
+      acc.human_verification = newStatus;
+      acc.verified_at = (newStatus !== 'unreviewed') ? new Date().toISOString() : null;
+
+      // 1. Save to localStorage
+      localVerifications[url] = {
+        account_id: accId,
+        person_id: personId,
+        profile_url: url,
+        status: newStatus,
+        timestamp: acc.verified_at
+      };
+      localStorage.setItem('pep_verifications', JSON.stringify(localVerifications));
+
+      // 2. If running locally with app.py, persist to SQLite backend
+      try {
+        fetch('/api/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            account_id: accId ? parseInt(accId) : null,
+            person_id: personId,
+            profile_url: url,
+            status: newStatus
+          })
+        }).catch(() => {});
+      } catch (e) {}
+
+      // 3. Update UI
+      recomputeStats();
+      renderTable();
+
+      // If drawer is currently open for this candidate, refresh it
+      if (document.getElementById('drawerOverlay').classList.contains('active')) {
+        openCandidateDetail(personId);
+      }
     }
 
     function openCandidateDetail(persId) {
@@ -880,22 +1296,51 @@
 
         accountsContainer.innerHTML = emailBannerHtml + candidate.social_accounts.map((acc, idx) => {
           const confPercent = Math.round(acc.confidence * 100);
-          const confClass = acc.confidence_level.toLowerCase();
+          const confClass = acc.confidence_level ? acc.confidence_level.toLowerCase() : 'unlikely';
           const signalsList = acc.signals || [];
           const signalsHtml = signalsList.map(s => `<span class="signal-chip">${s}</span>`).join('');
 
           const nameMatchSignal = signalsList.find(s => s.includes("NAME")) || "Token Overlap Checked";
-          const locMatchSignal = signalsList.find(s => s.includes("LOCATION") || s.includes("GEOGRAPHY")) || (acc.rationale.toLowerCase().includes("district") ? "District Aligned" : "General Match");
-          const campaignSignal = signalsList.find(s => s.includes("CAMPAIGN") || s.includes("BIO")) || "Candidate Keyword Evaluated";
+          const locMatchSignal = signalsList.find(s => s.includes("LOCATION") || s.includes("GEOGRAPHY") || s.includes("TOWN") || s.includes("MUNICIPALITY")) || (acc.rationale.toLowerCase().includes("district") ? "District Aligned" : "General Match");
+          const campaignSignal = signalsList.find(s => s.includes("CAMPAIGN") || s.includes("BIO") || s.includes("CIVIC")) || "Candidate Keyword Evaluated";
           const partyAccountStatus = signalsList.includes("PARTY_ORGANIZATION_PENALTY") ? "❌ Flagged as Party Org Page" : "✓ Personal/Campaign Account (Party Excluded)";
 
+          const verifStatus = acc.human_verification || 'unreviewed';
+          const isVerified = verifStatus === 'verified';
+          const isRejected = verifStatus === 'rejected';
+          const cardClass = isVerified ? 'is-verified' : (isRejected ? 'is-rejected' : '');
+
           return `
-            <div class="account-card">
+            <div class="account-card ${cardClass}">
               <div class="account-header">
                 <span class="platform-name">${acc.platform}</span>
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 13px; font-weight: 700; color: #fff;">${acc.confidence.toFixed(2)} / 1.00</span>
                   <span class="badge-confidence ${confClass}">${confPercent}% ${acc.confidence_level}</span>
+                </div>
+              </div>
+
+              <!-- Human Verification Control Bar -->
+              <div class="drawer-verif-box">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Verification:</span>
+                  <span class="verif-status-badge status-${verifStatus}">
+                    ${isVerified ? '✓ Human Verified' : (isRejected ? '✗ Human Rejected' : '⏳ Unreviewed')}
+                  </span>
+                  ${acc.verified_at ? `<span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">(${acc.verified_at.slice(0, 10)})</span>` : ''}
+                </div>
+                <div class="drawer-verif-actions">
+                  <button class="drawer-verif-btn verify ${isVerified ? 'active' : ''}" onclick="toggleVerification('${acc.id || ''}', '${candidate.id}', '${acc.profile_url}', 'verified')">
+                    ✓ Verify
+                  </button>
+                  <button class="drawer-verif-btn reject ${isRejected ? 'active' : ''}" onclick="toggleVerification('${acc.id || ''}', '${candidate.id}', '${acc.profile_url}', 'rejected')">
+                    ✗ Reject
+                  </button>
+                  ${(isVerified || isRejected) ? `
+                    <button class="drawer-verif-btn reset" onclick="toggleVerification('${acc.id || ''}', '${candidate.id}', '${acc.profile_url}', 'unreviewed')">
+                      ⟲ Reset
+                    </button>
+                  ` : ''}
                 </div>
               </div>
 
@@ -906,7 +1351,9 @@
               </div>
 
               <div class="url-row">
-                <a href="${acc.profile_url}" target="_blank" rel="noopener noreferrer" class="account-url">${acc.profile_url}</a>
+                <a href="${acc.profile_url}" target="_blank" rel="noopener noreferrer" class="account-url" title="Open profile in new tab">
+                  ${acc.profile_url} <span class="ext-icon">↗</span>
+                </a>
                 <button class="copy-btn" id="copyBtn_${idx}" onclick="copyUrl('${acc.profile_url}', 'copyBtn_${idx}')">📋 Copy</button>
               </div>
 
@@ -948,125 +1395,187 @@
 
       // Popolo JSON
       try {
-        const parsed = JSON.parse(candidate.popolo_json);
-        document.getElementById('drawerPopoloJson').innerText = JSON.stringify(parsed, null, 2);
-      } catch {
+        const pObj = typeof candidate.popolo_json === 'string' ? JSON.parse(candidate.popolo_json) : candidate.popolo_json;
+        document.getElementById('drawerPopoloJson').innerText = JSON.stringify(pObj, null, 2);
+      } catch (e) {
         document.getElementById('drawerPopoloJson').innerText = candidate.popolo_json || "{}";
       }
 
       document.getElementById('drawerOverlay').classList.add('active');
     }
 
+    function closeDrawer(event) {
+      if (event && event.target !== document.getElementById('drawerOverlay')) return;
+      document.getElementById('drawerOverlay').classList.remove('active');
+    }
+
     function copyUrl(text, btnId) {
       navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById(btnId);
         if (btn) {
-          const original = btn.innerHTML;
+          const originalText = btn.innerHTML;
           btn.innerHTML = '✓ Copied!';
           btn.classList.add('copied');
           setTimeout(() => {
-            btn.innerHTML = original;
+            btn.innerHTML = originalText;
             btn.classList.remove('copied');
-          }, 1600);
+          }, 1800);
         }
       });
     }
 
     function copyAllAccountUrls() {
-      if (!window.currentCandidateUrls || window.currentCandidateUrls.length === 0) return;
-      navigator.clipboard.writeText(window.currentCandidateUrls.join('\n')).then(() => {
-        const btn = document.getElementById('copyAllBtn');
-        if (btn) {
-          const original = btn.innerHTML;
-          btn.innerHTML = '✓ All Copied!';
-          btn.classList.add('copied');
+      if (window.currentCandidateUrls && window.currentCandidateUrls.length > 0) {
+        navigator.clipboard.writeText(window.currentCandidateUrls.join('\n')).then(() => {
+          const btn = document.getElementById('copyAllBtn');
+          btn.innerHTML = '✓ Copied All!';
           setTimeout(() => {
-            btn.innerHTML = original;
-            btn.classList.remove('copied');
-          }, 1600);
-        }
+            btn.innerHTML = '📋 Copy All URLs';
+          }, 1800);
+        });
+      }
+    }
+
+    function exportVerifications() {
+      const verifiedList = [];
+      allCandidates.forEach(c => {
+        (c.social_accounts || []).forEach(a => {
+          if (a.human_verification && a.human_verification !== 'unreviewed') {
+            verifiedList.push({
+              account_id: a.id || null,
+              person_id: c.id,
+              candidate_name: c.name,
+              party: c.party_name,
+              district: c.district,
+              platform: a.platform,
+              profile_url: a.profile_url,
+              confidence: a.confidence,
+              confidence_level: a.confidence_level,
+              human_verification: a.human_verification,
+              verified_at: a.verified_at
+            });
+          }
+        });
       });
+
+      if (verifiedList.length === 0) {
+        alert("No human verified or rejected accounts found to export yet. Click ✓ or ✗ next to any account to verify.");
+        return;
+      }
+
+      const blob = new Blob([JSON.stringify(verifiedList, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `pep_human_verifications_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
     }
 
-    function closeDrawer(e) {
-      if (e && e.target !== document.getElementById('drawerOverlay')) return;
-      document.getElementById('drawerOverlay').classList.remove('active');
+    function handleImportVerifications(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const list = JSON.parse(e.target.result);
+          if (!Array.isArray(list)) throw new Error("JSON must be an array of verification objects");
+
+          let applied = 0;
+          list.forEach(item => {
+            const url = item.profile_url;
+            const status = item.human_verification || item.status;
+            if (url && status) {
+              localVerifications[url] = {
+                account_id: item.account_id,
+                person_id: item.person_id,
+                profile_url: url,
+                status: status,
+                timestamp: item.verified_at || new Date().toISOString()
+              };
+
+              // Update in-memory candidate models
+              allCandidates.forEach(c => {
+                (c.social_accounts || []).forEach(a => {
+                  if (a.profile_url === url) {
+                    a.human_verification = status;
+                    a.verified_at = localVerifications[url].timestamp;
+                    applied++;
+                  }
+                });
+              });
+            }
+          });
+
+          localStorage.setItem('pep_verifications', JSON.stringify(localVerifications));
+          recomputeStats();
+          filterCandidates();
+          alert(`Successfully imported ${applied} verification decisions!`);
+        } catch (err) {
+          alert("Failed to parse verification JSON: " + err.message);
+        }
+      };
+      reader.readAsText(file);
     }
 
-    // SQL Modal & WebAssembly SQLite
-    function openSqlModal() {
+    // SQL Console WebAssembly
+    async function openSqlModal() {
       document.getElementById('sqlModalOverlay').classList.add('active');
       if (!sqlDb) {
-        initSqlDatabase();
+        document.getElementById('sqlStatus').innerText = "Loading SQLite WebAssembly runtime & database...";
+        try {
+          const SQL = await initSqlJs({
+            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}`
+          });
+          const response = await fetch('data/peps.db');
+          const buffer = await response.arrayBuffer();
+          sqlDb = new SQL.Database(new Uint8Array(buffer));
+          document.getElementById('sqlStatus').innerText = "✓ SQLite Ready";
+        } catch (err) {
+          document.getElementById('sqlStatus').innerText = "Failed to load SQLite DB: " + err.message;
+        }
       }
     }
 
-    function closeSqlModal(e) {
-      if (e && e.target !== document.getElementById('sqlModalOverlay')) return;
+    function closeSqlModal(event) {
+      if (event && event.target !== document.getElementById('sqlModalOverlay')) return;
       document.getElementById('sqlModalOverlay').classList.remove('active');
-    }
-
-    async function initSqlDatabase() {
-      const status = document.getElementById('sqlStatus');
-      status.innerText = "Loading SQLite WebAssembly engine...";
-      try {
-        const config = { locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${filename}` };
-        const SQL = await initSqlJs(config);
-        status.innerText = "Downloading peps.db (4.6 MB)...";
-        const res = await fetch('data/peps.db');
-        const buf = await res.arrayBuffer();
-        sqlDb = new SQL.Database(new Uint8Array(buf));
-        status.innerText = "✓ SQLite engine ready!";
-      } catch (err) {
-        console.error("SQL init error:", err);
-        status.innerText = "Failed to load SQLite DB in-browser: " + err.message;
-      }
     }
 
     function executeSql() {
       if (!sqlDb) {
-        alert("SQLite database is still downloading or loading. Please wait a moment.");
+        alert("SQLite database is not loaded yet.");
         return;
       }
-      const query = document.getElementById('sqlQueryInput').value;
-      const output = document.getElementById('sqlOutputWrap');
+      const query = document.getElementById('sqlQueryInput').value.trim();
+      const outputWrap = document.getElementById('sqlOutputWrap');
+      outputWrap.innerHTML = '';
+
       try {
-        const res = sqlDb.exec(query);
-        if (res.length === 0) {
-          output.innerHTML = "<p style='color: var(--text-muted); font-size: 13px;'>Query executed successfully. 0 rows returned.</p>";
+        const results = sqlDb.exec(query);
+        if (!results || results.length === 0) {
+          outputWrap.innerHTML = `<div style="color: var(--text-muted); font-size: 13px; padding: 12px 0;">Query executed successfully. 0 rows returned.</div>`;
           return;
         }
-        const columns = res[0].columns;
-        const values = res[0].values;
-        let html = "<table class='sql-results-table'><thead><tr>";
-        columns.forEach(c => html += `<th>${c}</th>`);
-        html += "</tr></thead><tbody>";
-        values.slice(0, 100).forEach(row => {
-          html += "<tr>";
-          row.forEach(val => html += `<td>${val !== null ? val : 'NULL'}</td>`);
-          html += "</tr>";
-        });
-        html += "</tbody></table>";
-        if (values.length > 100) {
-          html += `<p style='font-size: 11px; color: var(--text-muted); margin-top: 8px;'>Showing first 100 of ${values.length} rows.</p>`;
-        }
-        output.innerHTML = html;
+
+        const res = results[0];
+        const headersHtml = res.columns.map(c => `<th>${c}</th>`).join('');
+        const rowsHtml = res.values.map(row => {
+          return `<tr>` + row.map(val => `<td>${val !== null ? val : '<span style="color:#64748b">NULL</span>'}</td>`).join('') + `</tr>`;
+        }).join('');
+
+        outputWrap.innerHTML = `
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">${res.values.length} rows returned</div>
+          <table class="sql-results-table">
+            <thead><tr>${headersHtml}</tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        `;
       } catch (err) {
-        output.innerHTML = `<p style='color: var(--danger); font-size: 13px;'>Error: ${err.message}</p>`;
+        outputWrap.innerHTML = `<div style="color: var(--danger); font-size: 13px; padding: 12px 0;">SQL Error: ${err.message}</div>`;
       }
     }
 
-    // Debounced search
-    let debounceTimer;
-    document.getElementById('searchInput').addEventListener('input', () => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(filterCandidates, 250);
-    });
-    document.getElementById('platformFilter').addEventListener('change', filterCandidates);
-    document.getElementById('confidenceFilter').addEventListener('change', filterCandidates);
-    document.getElementById('partyFilter').addEventListener('change', filterCandidates);
-
-    window.addEventListener('DOMContentLoaded', init);
+    window.onload = init;
   </script>
 </body>
 </html>

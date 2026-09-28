@@ -16,6 +16,11 @@
     "PROBABLE": 45,
     "UNLIKELY": 532
   },
+  "human_verifications": {
+    "unreviewed": 641,
+    "verified": 1,
+    "rejected": 0
+  },
   "parties": [
     "Action Save-Bnm",
     "ActionSA",
@@ -123,5 +128,5 @@
     "NW404 - Maquassi Hills",
     "NW405 - JB Marks"
   ],
-  "last_updated": "2026-09-28 06:27 UTC"
+  "last_updated": "2026-09-28 06:58 UTC"
 }
