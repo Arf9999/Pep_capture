@@ -820,6 +820,180 @@
       color: var(--text-muted);
       font-size: 13px;
     }
+
+    /* Geographic Marker & Verification Context Styles */
+    .row-geo-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .row-geo-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .row-geo-name {
+      font-weight: 600;
+      color: #e2e8f0;
+      font-size: 13px;
+    }
+    .row-map-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1px 7px;
+      background: rgba(14, 165, 233, 0.15);
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      border-radius: 4px;
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .row-map-link:hover {
+      background: rgba(14, 165, 233, 0.3);
+      color: #fff;
+      border-color: #38bdf8;
+    }
+    .row-geo-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .row-geo-towns {
+      font-size: 11px;
+      color: #94a3b8;
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 250px;
+    }
+
+    .geo-marker-card {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(30, 41, 59, 0.45) 100%);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .geo-marker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .geo-marker-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #38bdf8;
+      background: rgba(14, 165, 233, 0.18);
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      border-radius: 4px;
+      padding: 2px 7px;
+      margin-bottom: 5px;
+    }
+    .geo-marker-heading {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #f1f5f9;
+      line-height: 1.45;
+    }
+    .geo-marker-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .geo-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .geo-btn-map {
+      background: #0284c7;
+      color: #ffffff !important;
+      border: 1px solid #38bdf8;
+    }
+    .geo-btn-map:hover {
+      background: #0369a1;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+    .geo-btn-source {
+      background: rgba(255, 255, 255, 0.06);
+      color: #cbd5e1 !important;
+      border: 1px solid var(--surface-border);
+    }
+    .geo-btn-source:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff !important;
+    }
+    .geo-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .geo-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .geo-meta-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .geo-meta-val {
+      font-size: 12px;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+    .geo-towns-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .geo-towns-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .geo-towns-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .geo-town-chip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 2px 9px;
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
@@ -935,6 +1109,7 @@
         <button class="close-btn" onclick="closeDrawer()">&times;</button>
       </div>
       <div class="drawer-content">
+        <div id="drawerGeoMarker"></div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <h4 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Surfaced Accounts & Human Verification</h4>
           <button class="copy-btn" id="copyAllBtn" onclick="copyAllAccountUrls()" style="display: none;">📋 Copy All URLs</button>
@@ -983,6 +1158,275 @@
       localVerifications = JSON.parse(localStorage.getItem('pep_verifications') || '{}');
     } catch (e) {
       localVerifications = {};
+    }
+
+    // South African Municipal & District Geographic Verification Taxonomy
+    const SA_GEOGRAPHY_DATA = {
+      "NW403": {
+        code: "NW-403",
+        name: "City of Matlosana Local Municipality",
+        district_name: "Dr Kenneth Kaunda District Municipality",
+        province: "North West",
+        seat: "Klerksdorp",
+        summary: "NW-403 City of Matlosana Local Municipality, located within the Dr Kenneth Kaunda District Municipality in South Africa's North West",
+        towns: ["Klerksdorp", "Jouberton", "Kanana", "Stilfontein", "Orkney", "Tigane", "Hartbeesfontein"],
+        source_url: "http://www.municipality.co.za/?pid=79&sid=168:CITY-OF-MATLOSANA-LOCAL-MUNICIPALITY-NW403",
+        map_url: "https://www.google.com/maps/search/?api=1&query=City+of+Matlosana+Local+Municipality%2C+North+West%2C+South+Africa"
+      },
+      "NW404": {
+        code: "NW-404",
+        name: "Maquassi Hills Local Municipality",
+        district_name: "Dr Kenneth Kaunda District Municipality",
+        province: "North West",
+        seat: "Wolmaransstad",
+        summary: "NW-404 Maquassi Hills Local Municipality, located within the Dr Kenneth Kaunda District Municipality in South Africa's North West",
+        towns: ["Wolmaransstad", "Leeudoringstad", "Makwassie", "Witpoort", "Tswelelang", "Lebaleng"],
+        source_url: "https://municipalities.co.za/overview/1192/maquassi-hills-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Maquassi+Hills+Local+Municipality%2C+North+West%2C+South+Africa"
+      },
+      "NW405": {
+        code: "NW-405",
+        name: "JB Marks Local Municipality",
+        district_name: "Dr Kenneth Kaunda District Municipality",
+        province: "North West",
+        seat: "Potchefstroom",
+        summary: "NW-405 JB Marks Local Municipality, located within the Dr Kenneth Kaunda District Municipality in South Africa's North West",
+        towns: ["Potchefstroom", "Ventersdorp", "Ikageng", "Promosa", "Mohadin", "Tshing"],
+        source_url: "https://municipalities.co.za/overview/1257/jb-marks-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=JB+Marks+Local+Municipality%2C+North+West%2C+South+Africa"
+      },
+      "BUF": {
+        code: "BUF",
+        name: "Buffalo City Metropolitan Municipality",
+        district_name: "Buffalo City Metro",
+        province: "Eastern Cape",
+        seat: "East London",
+        summary: "BUF Buffalo City Metropolitan Municipality, located in South Africa's Eastern Cape",
+        towns: ["East London", "Bhisho (Bisho)", "Qonce (King William's Town)", "Mdantsane", "Dimbaza", "Berlin", "Zwelitsha"],
+        source_url: "https://municipalities.co.za/overview/3/buffalo-city-metropolitan-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Buffalo+City+Metropolitan+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "JHB": {
+        code: "JHB",
+        name: "City of Johannesburg Metropolitan Municipality",
+        district_name: "City of Johannesburg Metro",
+        province: "Gauteng",
+        seat: "Johannesburg",
+        summary: "JHB City of Johannesburg Metropolitan Municipality, located in South Africa's Gauteng",
+        towns: ["Johannesburg", "Soweto", "Sandton", "Roodepoort", "Randburg", "Alexandra", "Midrand", "Diepsloot"],
+        source_url: "https://municipalities.co.za/overview/2/city-of-johannesburg-metropolitan-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=City+of+Johannesburg+Metropolitan+Municipality%2C+Gauteng%2C+South+Africa"
+      },
+      "DC10": {
+        code: "DC10",
+        name: "Sarah Baartman District Municipality",
+        district_name: "Sarah Baartman District",
+        province: "Eastern Cape",
+        seat: "Gqeberha / Makhanda",
+        summary: "DC10 Sarah Baartman District Municipality, located in South Africa's Eastern Cape",
+        towns: ["Graaff-Reinet", "Makhanda (Grahamstown)", "Port Alfred", "Jeffreys Bay", "Humansdorp", "Kirkwood"],
+        source_url: "https://municipalities.co.za/overview/103/sarah-baartman-district-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Sarah+Baartman+District+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "DC12": {
+        code: "DC12",
+        name: "Amathole District Municipality",
+        district_name: "Amathole District",
+        province: "Eastern Cape",
+        seat: "East London / Dutywa",
+        summary: "DC12 Amathole District Municipality, located in South Africa's Eastern Cape",
+        towns: ["Dutywa", "Butterworth (Gcuwa)", "Stutterheim", "Komga", "Willowvale (Gatyana)", "Centane"],
+        source_url: "https://municipalities.co.za/overview/104/amathole-district-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Amathole+District+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "DC13": {
+        code: "DC13",
+        name: "Chris Hani District Municipality",
+        district_name: "Chris Hani District",
+        province: "Eastern Cape",
+        seat: "Komani (Queenstown)",
+        summary: "DC13 Chris Hani District Municipality, located in South Africa's Eastern Cape",
+        towns: ["Komani (Queenstown)", "Cradock", "Middelburg", "Cofimvaba", "Lady Frere (Cacadu)", "Engcobo"],
+        source_url: "https://municipalities.co.za/overview/105/chris-hani-district-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Chris+Hani+District+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "DC14": {
+        code: "DC14",
+        name: "Joe Gqabi District Municipality",
+        district_name: "Joe Gqabi District",
+        province: "Eastern Cape",
+        seat: "Barkly East",
+        summary: "DC14 Joe Gqabi District Municipality, located in South Africa's Eastern Cape",
+        towns: ["Aliwal North (Maletswai)", "Barkly East", "Maclear (Nqanqarhu)", "Burgersdorp", "Lady Grey", "Sterkspruit"],
+        source_url: "https://municipalities.co.za/overview/106/joe-gqabi-district-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Joe+Gqabi+District+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "DC15": {
+        code: "DC15",
+        name: "O.R. Tambo District Municipality",
+        district_name: "O.R. Tambo District",
+        province: "Eastern Cape",
+        seat: "Mthatha",
+        summary: "DC15 O.R. Tambo District Municipality, located in South Africa's Eastern Cape",
+        towns: ["Mthatha (Umtata)", "Port St Johns", "Lusikisiki", "Libode", "Ngqeleni", "Tsolo", "Qumbu"],
+        source_url: "https://municipalities.co.za/overview/107/o-r-tambo-district-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=OR+Tambo+District+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "DC21": {
+        code: "DC21",
+        name: "Ugu District Municipality",
+        district_name: "Ugu District",
+        province: "KwaZulu-Natal",
+        seat: "Port Shepstone",
+        summary: "DC21 Ugu District Municipality, located on the South Coast of South Africa's KwaZulu-Natal",
+        towns: ["Port Shepstone", "Margate", "Scottburgh", "Hibberdene", "Harding", "Pennington", "Port Edward"],
+        source_url: "https://municipalities.co.za/overview/119/ugu-district-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Ugu+District+Municipality%2C+KwaZulu-Natal%2C+South+Africa"
+      },
+      "DC44": {
+        code: "DC44",
+        name: "Alfred Nzo District Municipality",
+        district_name: "Alfred Nzo District",
+        province: "Eastern Cape",
+        seat: "Mount Ayliff",
+        summary: "DC44 Alfred Nzo District Municipality, located in South Africa's Eastern Cape",
+        towns: ["Mount Ayliff (Maxesibeni)", "Mount Frere (KwaBhaca)", "Matatiele", "Maluti", "Bizana", "Tabankulu"],
+        source_url: "https://municipalities.co.za/overview/108/alfred-nzo-district-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Alfred+Nzo+District+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC101": {
+        code: "EC-101",
+        name: "Dr Beyers Naudé Local Municipality",
+        district_name: "Sarah Baartman District Municipality",
+        province: "Eastern Cape",
+        seat: "Graaff-Reinet",
+        summary: "EC-101 Dr Beyers Naudé Local Municipality, located within the Sarah Baartman District Municipality in South Africa's Eastern Cape",
+        towns: ["Graaff-Reinet", "Aberdeen", "Willowmore", "Steytlerville", "Jansenville", "Nieu-Bethesda"],
+        source_url: "https://municipalities.co.za/overview/1247/dr-beyers-naude-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Dr+Beyers+Naude+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC102": {
+        code: "EC-102",
+        name: "Blue Crane Route Local Municipality",
+        district_name: "Sarah Baartman District Municipality",
+        province: "Eastern Cape",
+        seat: "Somerset East",
+        summary: "EC-102 Blue Crane Route Local Municipality, located within the Sarah Baartman District Municipality in South Africa's Eastern Cape",
+        towns: ["Somerset East", "Cookhouse", "Pearston"],
+        source_url: "https://municipalities.co.za/overview/1004/blue-crane-route-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Blue+Crane+Route+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC104": {
+        code: "EC-104",
+        name: "Makana Local Municipality",
+        district_name: "Sarah Baartman District Municipality",
+        province: "Eastern Cape",
+        seat: "Makhanda (Grahamstown)",
+        summary: "EC-104 Makana Local Municipality, located within the Sarah Baartman District Municipality in South Africa's Eastern Cape",
+        towns: ["Makhanda (Grahamstown)", "Alicedale", "Riebeek East"],
+        source_url: "https://municipalities.co.za/overview/1006/makana-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Makana+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC105": {
+        code: "EC-105",
+        name: "Ndlambe Local Municipality",
+        district_name: "Sarah Baartman District Municipality",
+        province: "Eastern Cape",
+        seat: "Port Alfred",
+        summary: "EC-105 Ndlambe Local Municipality, located within the Sarah Baartman District Municipality in South Africa's Eastern Cape",
+        towns: ["Port Alfred", "Kenton-on-Sea", "Bushmans River", "Alexandria", "Bathurst"],
+        source_url: "https://municipalities.co.za/overview/1007/ndlambe-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Ndlambe+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC106": {
+        code: "EC-106",
+        name: "Sundays River Valley Local Municipality",
+        district_name: "Sarah Baartman District Municipality",
+        province: "Eastern Cape",
+        seat: "Kirkwood",
+        summary: "EC-106 Sundays River Valley Local Municipality, located within the Sarah Baartman District Municipality in South Africa's Eastern Cape",
+        towns: ["Kirkwood", "Paterson", "Addo", "Enon", "Sunland"],
+        source_url: "https://municipalities.co.za/overview/1008/sundays-river-valley-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Sundays+River+Valley+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC108": {
+        code: "EC-108",
+        name: "Kouga Local Municipality",
+        district_name: "Sarah Baartman District Municipality",
+        province: "Eastern Cape",
+        seat: "Jeffreys Bay",
+        summary: "EC-108 Kouga Local Municipality, located within the Sarah Baartman District Municipality in South Africa's Eastern Cape",
+        towns: ["Jeffreys Bay", "Humansdorp", "St Francis Bay", "Cape St Francis", "Oyster Bay", "Hankey", "Patensie"],
+        source_url: "https://municipalities.co.za/overview/1010/kouga-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Kouga+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC109": {
+        code: "EC-109",
+        name: "Kou-Kamma Local Municipality",
+        district_name: "Sarah Baartman District Municipality",
+        province: "Eastern Cape",
+        seat: "Kareedouw",
+        summary: "EC-109 Kou-Kamma Local Municipality, located within the Sarah Baartman District Municipality in South Africa's Eastern Cape",
+        towns: ["Kareedouw", "Joubertina", "Storms River", "Clarkson", "Coldstream", "Louterwater"],
+        source_url: "https://municipalities.co.za/overview/1011/kou-kamma-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Kou-Kamma+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC121": {
+        code: "EC-121",
+        name: "Mbhashe Local Municipality",
+        district_name: "Amathole District Municipality",
+        province: "Eastern Cape",
+        seat: "Dutywa",
+        summary: "EC-121 Mbhashe Local Municipality, located within the Amathole District Municipality in South Africa's Eastern Cape",
+        towns: ["Dutywa (Idutywa)", "Gatyana (Willowvale)", "Xhora (Elliotdale)"],
+        source_url: "https://municipalities.co.za/overview/1012/mbhashe-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Mbhashe+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC122": {
+        code: "EC-122",
+        name: "Mnquma Local Municipality",
+        district_name: "Amathole District Municipality",
+        province: "Eastern Cape",
+        seat: "Gcuwa (Butterworth)",
+        summary: "EC-122 Mnquma Local Municipality, located within the Amathole District Municipality in South Africa's Eastern Cape",
+        towns: ["Gcuwa (Butterworth)", "Centane (Kentani)", "Ngqamakhwe", "Msobomvu"],
+        source_url: "https://municipalities.co.za/overview/1013/mnquma-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Mnquma+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC123": {
+        code: "EC-123",
+        name: "Great Kei Local Municipality",
+        district_name: "Amathole District Municipality",
+        province: "Eastern Cape",
+        seat: "Komga",
+        summary: "EC-123 Great Kei Local Municipality, located within the Amathole District Municipality in South Africa's Eastern Cape",
+        towns: ["Komga", "Kei Mouth", "Morgan Bay", "Haga Haga", "Chintsa East"],
+        source_url: "https://municipalities.co.za/overview/1014/great-kei-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Great+Kei+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      },
+      "EC124": {
+        code: "EC-124",
+        name: "Amahlathi Local Municipality",
+        district_name: "Amathole District Municipality",
+        province: "Eastern Cape",
+        seat: "Stutterheim",
+        summary: "EC-124 Amahlathi Local Municipality, located within the Amathole District Municipality in South Africa's Eastern Cape",
+        towns: ["Stutterheim", "Cathcart", "Keiskammahoek"],
+        source_url: "https://municipalities.co.za/overview/1015/amahlathi-local-municipality",
+        map_url: "https://www.google.com/maps/search/?api=1&query=Amahlathi+Local+Municipality%2C+Eastern+Cape%2C+South+Africa"
+      }
+    };
+
+    function getGeoContext(districtRaw) {
+      if (!districtRaw) return null;
+      const d = districtRaw.trim();
+      for (const [code, info] of Object.entries(SA_GEOGRAPHY_DATA)) {
+        if (d.startsWith(code) || d.includes(code)) return info;
+      }
+      if (d.includes('Johannesburg') || d.includes('JHB')) {
+        return SA_GEOGRAPHY_DATA['JHB'];
+      }
+      return null;
     }
 
     async function init() {
@@ -1053,10 +1497,20 @@
       filteredCandidates = allCandidates.filter(c => {
         // Query match
         if (q) {
+          const geo = getGeoContext(c.district);
+          const matchGeo = geo && (
+            geo.name.toLowerCase().includes(q) ||
+            geo.code.toLowerCase().includes(q) ||
+            geo.district_name.toLowerCase().includes(q) ||
+            geo.province.toLowerCase().includes(q) ||
+            geo.seat.toLowerCase().includes(q) ||
+            geo.towns.some(t => t.toLowerCase().includes(q))
+          );
           const matchQ = (c.name && c.name.toLowerCase().includes(q)) ||
                          (c.id && c.id.toLowerCase().includes(q)) ||
                          (c.party_name && c.party_name.toLowerCase().includes(q)) ||
-                         (c.district && c.district.toLowerCase().includes(q));
+                         (c.district && c.district.toLowerCase().includes(q)) ||
+                         matchGeo;
           if (!matchQ) return false;
         }
 
@@ -1186,12 +1640,29 @@
           candidateVerifSummary = `<span style="color: #f87171; font-size: 11px; font-weight: 600; display: block; margin-top: 4px;">✗ ${rejCount} Rejected</span>`;
         }
 
+        const geo = getGeoContext(c.district);
+        let districtCellHtml = '';
+        if (geo) {
+          districtCellHtml = `
+            <div class="row-geo-cell">
+              <div class="row-geo-top">
+                <span class="row-geo-name">${geo.name}</span>
+                <a href="${geo.map_url}" target="_blank" rel="noopener noreferrer" class="row-map-link" onclick="event.stopPropagation()" title="Open ${geo.name} on Google Maps">🗺️ Map ↗</a>
+              </div>
+              <div class="row-geo-sub">${geo.code} • ${geo.district_name || geo.province}</div>
+              <div class="row-geo-towns" title="Key towns: ${geo.towns.join(', ')}">📍 ${geo.towns.slice(0, 3).join(', ')}${geo.towns.length > 3 ? '…' : ''}</div>
+            </div>
+          `;
+        } else {
+          districtCellHtml = `<span style="color: var(--text-muted);">${c.district || '-'}</span>`;
+        }
+
         return `
           <tr class="candidate-row" onclick="openCandidateDetail('${c.id}')">
             <td><span class="badge-id">${c.id}</span></td>
             <td style="font-weight: 600;">${c.name}</td>
             <td style="color: var(--text-muted);">${c.party_name || '-'}</td>
-            <td style="color: var(--text-muted);">${c.district || '-'}</td>
+            <td>${districtCellHtml}</td>
             <td>${accountsHtml}</td>
             <td>
               <span class="badge-confidence ${confClass}">${c.account_count > 0 ? `${tierLabel} (${maxConf})` : 'None'}</span>
@@ -1265,11 +1736,68 @@
       if (!candidate) return;
 
       document.getElementById('drawerName').innerText = candidate.name;
-      let metaText = `${candidate.id} • ${candidate.party_name || 'Independent'} • ${candidate.district || 'South Africa'}`;
-      if (candidate.email) {
-        metaText += ` • ✉️ ${candidate.email}`;
+      const geo = getGeoContext(candidate.district);
+
+      let metaHtml = `${candidate.id} • ${candidate.party_name || 'Independent'} • <span style="color: #e2e8f0; font-weight: 500;">${candidate.district || 'South Africa'}</span>`;
+      if (geo) {
+        metaHtml += ` • <a href="${geo.map_url}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; font-weight: 600;">🗺️ View Map ↗</a>`;
       }
-      document.getElementById('drawerMeta').innerText = metaText;
+      if (candidate.email) {
+        metaHtml += ` • ✉️ ${candidate.email}`;
+      }
+      document.getElementById('drawerMeta').innerHTML = metaHtml;
+
+      const geoMarkerContainer = document.getElementById('drawerGeoMarker');
+      if (geoMarkerContainer) {
+        if (geo) {
+          geoMarkerContainer.innerHTML = `
+            <div class="geo-marker-card">
+              <div class="geo-marker-header">
+                <div style="flex: 1; min-width: 250px;">
+                  <span class="geo-marker-badge">📍 Geographic Verification Context</span>
+                  <div class="geo-marker-heading">${geo.summary}</div>
+                </div>
+                <div class="geo-marker-actions">
+                  <a href="${geo.map_url}" target="_blank" rel="noopener noreferrer" class="geo-btn geo-btn-map" title="Open Google Maps search for this municipality">
+                    🗺️ Google Maps ↗
+                  </a>
+                  ${geo.source_url ? `
+                    <a href="${geo.source_url}" target="_blank" rel="noopener noreferrer" class="geo-btn geo-btn-source" title="View municipal overview directory">
+                      🏛️ Profile ↗
+                    </a>
+                  ` : ''}
+                </div>
+              </div>
+              <div class="geo-meta-grid">
+                <div class="geo-meta-item">
+                  <span class="geo-meta-label">Code</span>
+                  <span class="geo-meta-val">${geo.code}</span>
+                </div>
+                <div class="geo-meta-item">
+                  <span class="geo-meta-label">District / Metro</span>
+                  <span class="geo-meta-val">${geo.district_name}</span>
+                </div>
+                <div class="geo-meta-item">
+                  <span class="geo-meta-label">Province</span>
+                  <span class="geo-meta-val">${geo.province}</span>
+                </div>
+                <div class="geo-meta-item">
+                  <span class="geo-meta-label">Seat / Main Hub</span>
+                  <span class="geo-meta-val">${geo.seat}</span>
+                </div>
+              </div>
+              <div class="geo-towns-wrap">
+                <span class="geo-towns-title">Corroborate candidate bios, check-ins & education against key towns:</span>
+                <div class="geo-towns-list">
+                  ${geo.towns.map(t => `<span class="geo-town-chip">📍 ${t}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          geoMarkerContainer.innerHTML = '';
+        }
+      }
 
       const accountsContainer = document.getElementById('drawerAccountsList');
       const copyAllBtn = document.getElementById('copyAllBtn');
