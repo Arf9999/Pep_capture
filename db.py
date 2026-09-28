@@ -34,16 +34,19 @@ def init_database(db_path: str = DB_FILE):
         office TEXT,
         district TEXT,
         email TEXT,
+        ward TEXT,
+        ward_pr_order TEXT,
         popolo_json TEXT,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
 
-    # Column migration for existing databases
-    try:
-        cursor.execute("ALTER TABLE persons ADD COLUMN email TEXT;")
-    except sqlite3.OperationalError:
-        pass  # column already exists
+    # Column migrations for existing databases
+    for col in ["email", "ward", "ward_pr_order"]:
+        try:
+            cursor.execute(f"ALTER TABLE persons ADD COLUMN {col} TEXT;")
+        except sqlite3.OperationalError:
+            pass  # column already exists
 
     # Social Accounts / Contact Details Table
     cursor.execute("""

@@ -994,6 +994,49 @@
       color: #cbd5e1;
       font-weight: 500;
     }
+
+    /* Councillor Type & Ward Badges */
+    .badge-role {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.02em;
+    }
+    .role-ward {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+    .role-pr {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      color: #c084fc;
+    }
+    .badge-ward-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(14, 165, 233, 0.2);
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      color: #38bdf8;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 6px;
+    }
+    .badge-pr-chip {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #cbd5e1;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 5px;
+    }
   </style>
 </head>
 <body>
@@ -1042,8 +1085,22 @@
     <div class="controls-bar">
       <div class="search-input-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search by Candidate Name, pers_xxx ID, Party, or District..." oninput="filterCandidates()">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by Candidate Name, ID, Party, District, Ward..." oninput="filterCandidates()">
       </div>
+      <select id="councillorTypeFilter" class="select-filter" onchange="filterCandidates()">
+        <option value="">All Councillor Types</option>
+        <option value="ward_all">🏛️ All Ward Candidates</option>
+        <option value="pr_all">📋 All PR List Candidates</option>
+        <option value="Local Ward Candidate">Local Ward Candidate</option>
+        <option value="Metro Ward Candidate">Metro Ward Candidate</option>
+        <option value="Local PR Candidate">Local PR Candidate</option>
+        <option value="Metro PR Candidate">Metro PR Candidate</option>
+        <option value="District PR Candidate">District PR Candidate</option>
+        <option value="Johannesburg Mayoral Candidate">Mayoral Candidate</option>
+      </select>
+      <select id="wardFilter" class="select-filter" onchange="filterCandidates()">
+        <option value="">All Wards</option>
+      </select>
       <select id="platformFilter" class="select-filter" onchange="filterCandidates()">
         <option value="">All Social Platforms</option>
         <option value="facebook">Facebook</option>
@@ -1077,7 +1134,7 @@
         <thead>
           <tr>
             <th>Candidate ID</th>
-            <th>Full Name</th>
+            <th>Full Name & Role</th>
             <th>Party</th>
             <th>District / Municipality</th>
             <th>Surfaced Social Profiles (Click to Open Tab)</th>
@@ -1450,6 +1507,17 @@
           });
         }
 
+        // Populate ward filter
+        const wardSelect = document.getElementById('wardFilter');
+        if (stats.wards && stats.wards.length > 0) {
+          stats.wards.forEach(w => {
+            const opt = document.createElement('option');
+            opt.value = w;
+            opt.innerText = `Ward ${w}`;
+            wardSelect.appendChild(opt);
+          });
+        }
+
         // Load candidates
         const candRes = await fetch('data/candidates.json');
         allCandidates = await candRes.json();
@@ -1489,6 +1557,8 @@
 
     function filterCandidates() {
       const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const councillorType = document.getElementById('councillorTypeFilter') ? document.getElementById('councillorTypeFilter').value : '';
+      const selectedWard = document.getElementById('wardFilter') ? document.getElementById('wardFilter').value : '';
       const platform = document.getElementById('platformFilter').value.toLowerCase();
       const confidence = document.getElementById('confidenceFilter').value.toUpperCase();
       const verification = document.getElementById('verificationFilter').value.toLowerCase();
@@ -1506,12 +1576,32 @@
             geo.seat.toLowerCase().includes(q) ||
             geo.towns.some(t => t.toLowerCase().includes(q))
           );
+          const wardStr = c.ward ? `ward ${c.ward}` : '';
+          const officeStr = c.office ? c.office.toLowerCase() : '';
           const matchQ = (c.name && c.name.toLowerCase().includes(q)) ||
                          (c.id && c.id.toLowerCase().includes(q)) ||
                          (c.party_name && c.party_name.toLowerCase().includes(q)) ||
                          (c.district && c.district.toLowerCase().includes(q)) ||
+                         (wardStr && wardStr.includes(q)) ||
+                         (officeStr && officeStr.includes(q)) ||
                          matchGeo;
           if (!matchQ) return false;
+        }
+
+        // Councillor Type match
+        if (councillorType) {
+          if (councillorType === 'ward_all') {
+            if (!c.office || !c.office.includes('Ward')) return false;
+          } else if (councillorType === 'pr_all') {
+            if (!c.office || !c.office.includes('PR')) return false;
+          } else {
+            if (c.office !== councillorType) return false;
+          }
+        }
+
+        // Ward match
+        if (selectedWard) {
+          if (c.ward != selectedWard && c.ward_pr_order != selectedWard) return false;
         }
 
         // Platform match
@@ -1657,10 +1747,22 @@
           districtCellHtml = `<span style="color: var(--text-muted);">${c.district || '-'}</span>`;
         }
 
+        const roleBadgeClass = (c.office && c.office.includes('Ward')) ? 'role-ward' : 'role-pr';
+        const roleLabel = c.office || 'Candidate';
+        const wardBadgeHtml = c.ward 
+          ? `<span class="badge-ward-chip">🗳️ Ward ${c.ward}</span>` 
+          : (c.ward_pr_order ? `<span class="badge-pr-chip">📋 Rank #${c.ward_pr_order}</span>` : '');
+
         return `
           <tr class="candidate-row" onclick="openCandidateDetail('${c.id}')">
             <td><span class="badge-id">${c.id}</span></td>
-            <td style="font-weight: 600;">${c.name}</td>
+            <td>
+              <div style="font-weight: 600; font-size: 13.5px;">${c.name}</div>
+              <div style="margin-top: 4px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                <span class="badge-role ${roleBadgeClass}">${roleLabel}</span>
+                ${wardBadgeHtml}
+              </div>
+            </td>
             <td style="color: var(--text-muted);">${c.party_name || '-'}</td>
             <td>${districtCellHtml}</td>
             <td>${accountsHtml}</td>
@@ -1738,7 +1840,16 @@
       document.getElementById('drawerName').innerText = candidate.name;
       const geo = getGeoContext(candidate.district);
 
+      const roleBadgeClass = (candidate.office && candidate.office.includes('Ward')) ? 'role-ward' : 'role-pr';
       let metaHtml = `${candidate.id} • ${candidate.party_name || 'Independent'} • <span style="color: #e2e8f0; font-weight: 500;">${candidate.district || 'South Africa'}</span>`;
+      if (candidate.office) {
+        metaHtml += ` • <span class="badge-role ${roleBadgeClass}">${candidate.office}</span>`;
+      }
+      if (candidate.ward) {
+        metaHtml += ` • <span class="badge-ward-chip">🗳️ Ward ${candidate.ward}</span>`;
+      } else if (candidate.ward_pr_order) {
+        metaHtml += ` • <span class="badge-pr-chip">📋 PR Rank #${candidate.ward_pr_order}</span>`;
+      }
       if (geo) {
         metaHtml += ` • <a href="${geo.map_url}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; font-weight: 600;">🗺️ View Map ↗</a>`;
       }
@@ -1776,6 +1887,14 @@
                 <div class="geo-meta-item">
                   <span class="geo-meta-label">District / Metro</span>
                   <span class="geo-meta-val">${geo.district_name}</span>
+                </div>
+                <div class="geo-meta-item">
+                  <span class="geo-meta-label">Councillor Role</span>
+                  <span class="geo-meta-val" style="color: #38bdf8; font-weight: 600;">${candidate.office || 'Candidate'}</span>
+                </div>
+                <div class="geo-meta-item">
+                  <span class="geo-meta-label">Ward / Assignment</span>
+                  <span class="geo-meta-val" style="color: #34d399; font-weight: 600;">${candidate.ward ? `Ward ${candidate.ward}` : (candidate.ward_pr_order ? `PR Rank #${candidate.ward_pr_order}` : 'PR List')}</span>
                 </div>
                 <div class="geo-meta-item">
                   <span class="geo-meta-label">Province</span>

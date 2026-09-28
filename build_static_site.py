@@ -50,6 +50,12 @@ def build_site():
     c.execute("SELECT DISTINCT district FROM persons WHERE district IS NOT NULL AND district != '' ORDER BY district")
     districts = [r[0] for r in c.fetchall()]
 
+    c.execute("SELECT DISTINCT office FROM persons WHERE office IS NOT NULL AND office != '' ORDER BY office")
+    councillor_types = [r[0] for r in c.fetchall()]
+
+    c.execute("SELECT DISTINCT CAST(ward AS INTEGER) as w_int FROM persons WHERE ward IS NOT NULL AND ward != '' ORDER BY w_int")
+    wards = [str(r[0]) for r in c.fetchall()]
+
     c.execute("SELECT coalesce(human_verification, 'unreviewed') as status, count(*) FROM social_accounts GROUP BY human_verification")
     verif_counts = dict(c.fetchall())
     for k in ("verified", "rejected", "unreviewed"):
@@ -64,6 +70,8 @@ def build_site():
         "human_verifications": verif_counts,
         "parties": parties,
         "districts": districts,
+        "councillor_types": councillor_types,
+        "wards": wards,
         "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     }
 
@@ -74,7 +82,7 @@ def build_site():
     c.execute("""
         SELECT 
             p.id, p.name, p.first_name, p.middle_name, p.last_name, 
-            p.party_name, p.district, p.office, p.email, p.popolo_json,
+            p.party_name, p.district, p.office, p.ward, p.ward_pr_order, p.email, p.popolo_json,
             count(s.id) as account_count,
             coalesce(max(s.confidence), 0.0) as max_confidence
         FROM persons p
@@ -129,6 +137,8 @@ def build_site():
             "party_name": r["party_name"] or "",
             "district": r["district"] or "",
             "office": r["office"] or "",
+            "ward": r["ward"] or "",
+            "ward_pr_order": r["ward_pr_order"] or "",
             "email": r["email"] or "",
             "account_count": r["account_count"],
             "max_confidence": float(r["max_confidence"]),
