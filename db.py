@@ -73,12 +73,29 @@ def init_database(db_path: str = DB_FILE):
     for col, col_type in [
         ("human_verification", "TEXT DEFAULT 'unreviewed'"),
         ("verified_at", "TIMESTAMP"),
-        ("verified_notes", "TEXT")
+        ("verified_notes", "TEXT"),
+        ("verifier_id", "TEXT")
     ]:
         try:
             cursor.execute(f"ALTER TABLE social_accounts ADD COLUMN {col} {col_type};")
         except sqlite3.OperationalError:
             pass
+
+    # Verification Audit Log (Append-only ledger for remote verifiers & 1-click reversibility)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS verification_audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        account_id INTEGER,
+        person_id TEXT NOT NULL,
+        profile_url TEXT NOT NULL,
+        verifier_id TEXT NOT NULL DEFAULT 'anonymous',
+        action TEXT NOT NULL,
+        previous_status TEXT,
+        new_status TEXT,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
 
     # Indexes for fast lookup
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_persons_name ON persons(name);")
@@ -89,9 +106,13 @@ def init_database(db_path: str = DB_FILE):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_social_platform ON social_accounts(platform);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_social_confidence ON social_accounts(confidence_level);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_social_verification ON social_accounts(human_verification);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_person ON verification_audit_log(person_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_account ON verification_audit_log(account_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_created ON verification_audit_log(created_at);")
 
     conn.commit()
     conn.close()
+
 
 
 def upsert_person_with_accounts(person_dict: Dict[str, Any], db_path: str = DB_FILE):
@@ -190,10 +211,11 @@ def update_account_verification(
     person_id: Optional[str] = None,
     profile_url: Optional[str] = None,
     status: str = "verified",
+    verifier_id: str = "remote_verifier",
     notes: str = "",
     db_path: str = DB_FILE
-) -> bool:
-    """Updates the human verification status ('verified', 'rejected', 'unreviewed') of a social account."""
+) -> Dict[str, Any]:
+    """Updates the human verification status ('verified', 'rejected', 'unreviewed') and appends to verification_audit_log."""
     valid_statuses = ("verified", "rejected", "unreviewed")
     clean_status = status.lower().strip()
     if clean_status not in valid_statuses:
@@ -205,30 +227,40 @@ def update_account_verification(
 
     target_row = None
     if account_id is not None:
-        cursor.execute("SELECT id, person_id, profile_url FROM social_accounts WHERE id = ?", (account_id,))
+        cursor.execute("SELECT id, person_id, profile_url, human_verification FROM social_accounts WHERE id = ?", (account_id,))
         target_row = cursor.fetchone()
     elif person_id and profile_url:
-        cursor.execute("SELECT id, person_id, profile_url FROM social_accounts WHERE person_id = ? AND profile_url = ?", (person_id, profile_url))
+        cursor.execute("SELECT id, person_id, profile_url, human_verification FROM social_accounts WHERE person_id = ? AND profile_url = ?", (person_id, profile_url))
         target_row = cursor.fetchone()
     elif profile_url:
-        cursor.execute("SELECT id, person_id, profile_url FROM social_accounts WHERE profile_url = ?", (profile_url,))
+        cursor.execute("SELECT id, person_id, profile_url, human_verification FROM social_accounts WHERE profile_url = ?", (profile_url,))
         target_row = cursor.fetchone()
 
     if not target_row:
         conn.close()
-        return False
+        return {"success": False, "error": "Account not found"}
 
     acc_id = target_row["id"]
     p_id = target_row["person_id"]
     p_url = target_row["profile_url"]
+    prev_status = target_row["human_verification"] or "unreviewed"
 
+    # Update social_accounts table
     cursor.execute("""
         UPDATE social_accounts
-        SET human_verification = ?, verified_at = ?, verified_notes = ?
+        SET human_verification = ?, verified_at = ?, verified_notes = ?, verifier_id = ?
         WHERE id = ?
-    """, (clean_status, now if clean_status != "unreviewed" else None, notes, acc_id))
+    """, (clean_status, now if clean_status != "unreviewed" else None, notes, verifier_id, acc_id))
 
-    # Also update the person's Popolo JSON blob
+    # Append immutable transaction to verification_audit_log
+    cursor.execute("""
+        INSERT INTO verification_audit_log 
+        (account_id, person_id, profile_url, verifier_id, action, previous_status, new_status, notes, created_at)
+        VALUES (?, ?, ?, ?, 'VERIFY', ?, ?, ?, ?)
+    """, (acc_id, p_id, p_url, verifier_id, prev_status, clean_status, notes, now))
+    log_id = cursor.lastrowid
+
+    # Update person's Popolo JSON blob
     cursor.execute("SELECT popolo_json FROM persons WHERE id = ?", (p_id,))
     p_row = cursor.fetchone()
     if p_row and p_row["popolo_json"]:
@@ -238,6 +270,8 @@ def update_account_verification(
                 if cd.get("value") == p_url:
                     cd["human_verification"] = clean_status
                     cd["verified_at"] = now if clean_status != "unreviewed" else None
+                    cd["verifier_id"] = verifier_id
+                    cd["verified_notes"] = notes
                     break
             cursor.execute("UPDATE persons SET popolo_json = ? WHERE id = ?", (json.dumps(p_data), p_id))
         except Exception:
@@ -245,7 +279,121 @@ def update_account_verification(
 
     conn.commit()
     conn.close()
-    return True
+    return {
+        "success": True,
+        "log_id": log_id,
+        "account_id": acc_id,
+        "person_id": p_id,
+        "previous_status": prev_status,
+        "new_status": clean_status,
+        "verifier_id": verifier_id,
+        "timestamp": now
+    }
+
+
+def revert_verification(
+    log_id: int,
+    verifier_id: str = "remote_verifier",
+    reason: str = "",
+    db_path: str = DB_FILE
+) -> Dict[str, Any]:
+    """Reverts a previous verification action back to its previous state and logs the reversal transaction."""
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+    now = datetime.utcnow().isoformat()
+
+    cursor.execute("SELECT * FROM verification_audit_log WHERE id = ?", (log_id,))
+    log_row = cursor.fetchone()
+    if not log_row:
+        conn.close()
+        return {"success": False, "error": f"Audit record #{log_id} not found"}
+
+    acc_id = log_row["account_id"]
+    p_id = log_row["person_id"]
+    p_url = log_row["profile_url"]
+    target_status = log_row["previous_status"] or "unreviewed"
+    current_status = log_row["new_status"] or "unreviewed"
+
+    revert_note = f"Reverted audit #{log_id} ({log_row['action']}: {current_status} ➔ {target_status}). Reason: {reason}".strip()
+
+    # Revert social_accounts table
+    cursor.execute("""
+        UPDATE social_accounts
+        SET human_verification = ?, verified_at = ?, verified_notes = ?, verifier_id = ?
+        WHERE id = ?
+    """, (target_status, now if target_status != "unreviewed" else None, revert_note, verifier_id, acc_id))
+
+    # Append REVERT transaction to audit log
+    cursor.execute("""
+        INSERT INTO verification_audit_log 
+        (account_id, person_id, profile_url, verifier_id, action, previous_status, new_status, notes, created_at)
+        VALUES (?, ?, ?, ?, 'REVERT', ?, ?, ?, ?)
+    """, (acc_id, p_id, p_url, verifier_id, current_status, target_status, revert_note, now))
+    new_log_id = cursor.lastrowid
+
+    # Update Popolo JSON
+    cursor.execute("SELECT popolo_json FROM persons WHERE id = ?", (p_id,))
+    p_row = cursor.fetchone()
+    if p_row and p_row["popolo_json"]:
+        try:
+            p_data = json.loads(p_row["popolo_json"])
+            for cd in p_data.get("contact_details", []):
+                if cd.get("value") == p_url:
+                    cd["human_verification"] = target_status
+                    cd["verified_at"] = now if target_status != "unreviewed" else None
+                    cd["verifier_id"] = verifier_id
+                    cd["verified_notes"] = revert_note
+                    break
+            cursor.execute("UPDATE persons SET popolo_json = ? WHERE id = ?", (json.dumps(p_data), p_id))
+        except Exception:
+            pass
+
+    conn.commit()
+    conn.close()
+    return {
+        "success": True,
+        "log_id": new_log_id,
+        "reverted_audit_id": log_id,
+        "account_id": acc_id,
+        "person_id": p_id,
+        "reverted_to": target_status,
+        "verifier_id": verifier_id,
+        "timestamp": now
+    }
+
+
+def get_audit_history(
+    person_id: Optional[str] = None,
+    account_id: Optional[int] = None,
+    limit: int = 50,
+    db_path: str = DB_FILE
+) -> List[Dict[str, Any]]:
+    """Retrieves chronological audit trail records."""
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+
+    if person_id:
+        cursor.execute("""
+            SELECT * FROM verification_audit_log 
+            WHERE person_id = ? 
+            ORDER BY id DESC LIMIT ?
+        """, (person_id, limit))
+    elif account_id:
+        cursor.execute("""
+            SELECT * FROM verification_audit_log 
+            WHERE account_id = ? 
+            ORDER BY id DESC LIMIT ?
+        """, (account_id, limit))
+    else:
+        cursor.execute("""
+            SELECT * FROM verification_audit_log 
+            ORDER BY id DESC LIMIT ?
+        """, (limit,))
+
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return rows
+
 
 
 def search_peps(

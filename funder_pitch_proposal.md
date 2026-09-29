@@ -140,3 +140,20 @@ Because this pipeline is locally hosted with human oversight, funders are **not 
    * Every verified profile is backed by an explicit rationale detailing exact name match tokens, geographic triangulation, party cues, and human verification timestamps.
 4. **Reproducible, Open Methodology**:
    * Transparent scoring rubrics and documented algorithmic constraints preventing partisan bias or false-positive hallucinations.
+
+---
+
+### 7. Implementation Roadmap & Governance (Option A)
+
+The 8-week rollout is structured into four 2-week execution sprints:
+
+* **Sprint 1 (Weeks 1–2): Database Hardening, SSOT & Audit Ledger Engine**  
+  Establishing the canonical SQLite/libSQL database, append-only `verification_audit_log`, and 1-click rollback state machine for remote verifier attribution.
+* **Sprint 2 (Weeks 3–4): 5-Tier Prioritization & Dual SERP Router**  
+  Deploying the 5-tier filtering queue (Metros ➔ PR Lists ➔ Key Councils ➔ Ward Candidates ➔ Independents) and dual-provider search orchestration (Serpent API daily routine + SerpStack/Vertex AI burst reserves).
+* **Sprint 3 (Weeks 5–6): Remote Verifier Web App & Reversibility UX**  
+  Delivering the distributed web verification interface with verifier identity badges, ward/councillor filters, and interactive audit history drawers.
+* **Sprint 4 (Weeks 7–8): LLM Grounding, Export Automation & Operational Rollout**  
+  Calibrating grounded prompt evaluation against human verification benchmarks, activating Google Sheets live sync, and training OSINT verifiers.
+
+*For full technical specifications, database schemas, and risk mitigation strategies, see the companion document: [Implementation Plan: Option A](file:///Volumes/Lexar%20R/R_projects_local/peps/docs/implementation_plan_option_a.md).*

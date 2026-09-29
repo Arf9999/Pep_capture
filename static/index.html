@@ -634,6 +634,79 @@
       background: rgba(148, 163, 184, 0.2);
       color: #fff;
     }
+    .drawer-verif-btn.revert {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+      font-size: 11px;
+      padding: 3px 8px;
+    }
+    .drawer-verif-btn.revert:hover {
+      background: #f59e0b;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    /* Candidate Audit Timeline Section */
+    .audit-section {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .audit-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .audit-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .audit-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 240px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .audit-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .audit-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .audit-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .audit-badge.verify { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .audit-badge.revert { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .audit-notes {
+      font-size: 11px;
+      color: #94a3b8;
+      font-style: italic;
+    }
 
     .score-meter-wrap { margin-top: 2px; }
     .score-bar-bg {
@@ -1048,12 +1121,18 @@
       </div>
     </div>
     <div class="nav-actions">
-      <a href="methodology.html" class="nav-btn">📖 Methodology & Limitations</a>
-      <button class="nav-btn success" onclick="exportVerifications()">📥 Export Verifications</button>
+      <!-- Verifier Handle Input -->
+      <div style="display: inline-flex; align-items: center; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px; padding: 3px 10px; gap: 6px;" title="Remote verifier identity attached to all audit log entries">
+        <span style="font-size: 11px; color: #38bdf8; font-weight: 700; text-transform: uppercase;">👤 Verifier:</span>
+        <input type="text" id="verifierIdInput" placeholder="analyst_handle" style="background: transparent; border: none; color: #fff; font-size: 12px; font-weight: 600; width: 110px; outline: none;" onchange="saveVerifierId(this.value)">
+      </div>
+      <button class="nav-btn" onclick="openAuditModal()" style="border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">📜 Audit Trail</button>
+      <a href="methodology.html" class="nav-btn">📖 Methodology</a>
+      <button class="nav-btn success" onclick="exportVerifications()">📥 Export</button>
       <button class="nav-btn" onclick="document.getElementById('importVerifFile').click()">📤 Import</button>
       <input type="file" id="importVerifFile" accept=".json" style="display: none;" onchange="handleImportVerifications(event)">
-      <button class="nav-btn" onclick="openSqlModal()">⚡ SQL Query Console</button>
-      <a href="data/peps.db" download class="nav-btn primary">💾 Download SQLite (peps.db)</a>
+      <button class="nav-btn" onclick="openSqlModal()">⚡ SQL Console</button>
+      <a href="data/peps.db" download class="nav-btn primary">💾 SQLite</a>
       <a href="data/popolo_sa_candidates.json" download class="nav-btn">📥 Popolo JSON</a>
     </div>
   </header>
@@ -1173,6 +1252,17 @@
         </div>
         <div id="drawerAccountsList"></div>
 
+        <!-- Verification Audit Trail & Reversibility Section -->
+        <div class="audit-section" id="drawerAuditSection">
+          <div class="audit-header">
+            <span class="audit-title">📜 Candidate Verification Audit Trail & Reversibility</span>
+            <span id="drawerAuditCount" style="font-size: 11px; color: #38bdf8; font-weight: 600;">0 transactions</span>
+          </div>
+          <div class="audit-timeline" id="drawerAuditTimeline">
+            <div style="color: var(--text-muted); font-size: 12px; font-style: italic;">Loading candidate audit records...</div>
+          </div>
+        </div>
+
         <h4 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-top: 24px; margin-bottom: 8px; letter-spacing: 0.05em;">Popolo JSON Specification</h4>
         <pre class="popolo-json" id="drawerPopoloJson"></pre>
       </div>
@@ -1195,6 +1285,27 @@
         <span id="sqlStatus" style="font-size: 12px; color: var(--text-muted);"></span>
       </div>
       <div id="sqlOutputWrap" style="overflow-x: auto; margin-top: 16px;"></div>
+    </div>
+  </div>
+
+  <!-- Global Verification Audit Trail Modal -->
+  <div class="modal-overlay" id="auditModalOverlay" onclick="closeAuditModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 960px; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3 style="margin: 0;">📜 Verification Audit Ledger & Reversibility Console</h3>
+          <span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(168, 85, 247, 0.4);">SSOT Live Ledger</span>
+        </div>
+        <button class="close-btn" onclick="closeAuditModal()">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0 14px 0;">
+        Immutable, append-only ledger tracking remote verifier actions, candidate profile matches, rejection reasons, and 1-click rollbacks.
+      </p>
+      <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
+        <input type="text" id="auditFilterInput" placeholder="Filter by Candidate ID, Verifier, or Notes..." class="search-input" style="flex: 1;" oninput="renderGlobalAudit()">
+        <button class="nav-btn primary" onclick="loadGlobalAudit()">🔄 Refresh</button>
+      </div>
+      <div id="globalAuditWrap" style="overflow-x: auto; overflow-y: auto; flex: 1; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 4px;"></div>
     </div>
   </div>
 
@@ -1534,6 +1645,12 @@
           });
         });
 
+        // Initialize remote verifier ID
+        const verifierInput = document.getElementById('verifierIdInput');
+        if (verifierInput) {
+          verifierInput.value = getVerifierId();
+        }
+
         recomputeStats();
         filterCandidates();
       } catch (err) {
@@ -1799,17 +1916,28 @@
       acc.human_verification = newStatus;
       acc.verified_at = (newStatus !== 'unreviewed') ? new Date().toISOString() : null;
 
+      const verifier = getVerifierId();
+      let notes = '';
+      if (newStatus === 'rejected') {
+        notes = prompt(`Verifier [${verifier}]: Reason for rejection (optional):`, acc.verified_notes || '') || '';
+      } else if (newStatus === 'verified') {
+        notes = prompt(`Verifier [${verifier}]: Verification notes (optional):`, acc.verified_notes || '') || '';
+      }
+      acc.verified_notes = notes;
+
       // 1. Save to localStorage
       localVerifications[url] = {
         account_id: accId,
         person_id: personId,
         profile_url: url,
         status: newStatus,
+        verifier_id: verifier,
+        notes: notes,
         timestamp: acc.verified_at
       };
       localStorage.setItem('pep_verifications', JSON.stringify(localVerifications));
 
-      // 2. If running locally with app.py, persist to SQLite backend
+      // 2. If running with app.py (Single Point of Truth), persist to SQLite backend
       try {
         fetch('/api/verify', {
           method: 'POST',
@@ -1818,8 +1946,14 @@
             account_id: accId ? parseInt(accId) : null,
             person_id: personId,
             profile_url: url,
-            status: newStatus
+            status: newStatus,
+            verifier_id: verifier,
+            notes: notes
           })
+        }).then(r => r.json()).then(res => {
+          if (res.success && document.getElementById('drawerOverlay').classList.contains('active')) {
+            loadDrawerAudit(personId);
+          }
         }).catch(() => {});
       } catch (e) {}
 
@@ -2048,12 +2182,199 @@
         document.getElementById('drawerPopoloJson').innerText = candidate.popolo_json || "{}";
       }
 
+      // Load Candidate Verification Audit Trail
+      loadDrawerAudit(persId);
+
       document.getElementById('drawerOverlay').classList.add('active');
     }
 
     function closeDrawer(event) {
       if (event && event.target !== document.getElementById('drawerOverlay')) return;
       document.getElementById('drawerOverlay').classList.remove('active');
+    }
+
+    function getVerifierId() {
+      return localStorage.getItem('pep_verifier_id') || 'analyst_1';
+    }
+
+    function saveVerifierId(val) {
+      const clean = (val || '').trim() || 'analyst_1';
+      localStorage.setItem('pep_verifier_id', clean);
+      const el = document.getElementById('verifierIdInput');
+      if (el) el.value = clean;
+    }
+
+    let globalAuditList = [];
+
+    async function loadDrawerAudit(personId) {
+      const container = document.getElementById('drawerAuditTimeline');
+      const countBadge = document.getElementById('drawerAuditCount');
+      if (!container) return;
+
+      container.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; font-style: italic;">Loading candidate audit records...</div>`;
+
+      try {
+        const res = await fetch(`/api/audit/${personId}`);
+        if (res.ok) {
+          const records = await res.json();
+          if (countBadge) countBadge.innerText = `${records.length} transactions`;
+          if (!records || records.length === 0) {
+            container.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; font-style: italic;">No audit transactions recorded yet for this candidate.</div>`;
+            return;
+          }
+          container.innerHTML = records.map(r => {
+            const isRevert = r.action === 'REVERT';
+            const badgeClass = isRevert ? 'revert' : 'verify';
+            const dateStr = r.created_at ? r.created_at.replace('T', ' ').slice(0, 19) : '';
+            return `
+              <div class="audit-item">
+                <div class="audit-item-top">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="audit-badge ${badgeClass}">${r.action}: ${r.previous_status || 'unreviewed'} ➔ ${r.new_status}</span>
+                    <span style="font-weight: 600; color: #38bdf8;">👤 ${r.verifier_id || 'anonymous'}</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">${dateStr}</span>
+                    ${!isRevert ? `<button class="drawer-verif-btn revert" onclick="revertAction(${r.id}, '${r.person_id}')" title="Undo / Rollback this specific verification">↩ Revert</button>` : ''}
+                  </div>
+                </div>
+                <div style="font-size: 11px; color: #cbd5e1; word-break: break-all;">
+                  🔗 <a href="${r.profile_url}" target="_blank" style="color: #94a3b8; text-decoration: underline;">${r.profile_url}</a>
+                </div>
+                ${r.notes ? `<div class="audit-notes">💬 "${r.notes}"</div>` : ''}
+              </div>
+            `;
+          }).join('');
+          return;
+        }
+      } catch (e) {
+        if (countBadge) countBadge.innerText = `Local Cache`;
+        container.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; font-style: italic;">Connected to local browser storage. Start app.py for multi-user SSOT sync.</div>`;
+      }
+    }
+
+    async function revertAction(logId, personId) {
+      const reason = prompt("Enter rollback / audit revert reason (optional):") || "User initiated rollback";
+      const verifier = getVerifierId();
+      try {
+        const res = await fetch('/api/revert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            log_id: logId,
+            verifier_id: verifier,
+            reason: reason
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const candidate = allCandidates.find(c => c.id === personId);
+          if (candidate && candidate.social_accounts) {
+            const acc = candidate.social_accounts.find(a => a.id === data.result.account_id);
+            if (acc) {
+              acc.human_verification = data.result.reverted_to;
+              if (localVerifications[acc.profile_url]) {
+                localVerifications[acc.profile_url].status = data.result.reverted_to;
+                localStorage.setItem('pep_verifications', JSON.stringify(localVerifications));
+              }
+            }
+          }
+          recomputeStats();
+          renderTable();
+          openCandidateDetail(personId);
+          if (document.getElementById('auditModalOverlay').classList.contains('active')) {
+            loadGlobalAudit();
+          }
+        } else {
+          alert("Revert failed: " + (data.error || "Unknown error"));
+        }
+      } catch (e) {
+        alert("Could not reach API server: " + e.message);
+      }
+    }
+
+    function openAuditModal() {
+      document.getElementById('auditModalOverlay').classList.add('active');
+      loadGlobalAudit();
+    }
+
+    function closeAuditModal(e) {
+      if (e && e.target !== document.getElementById('auditModalOverlay')) return;
+      document.getElementById('auditModalOverlay').classList.remove('active');
+    }
+
+    async function loadGlobalAudit() {
+      const wrap = document.getElementById('globalAuditWrap');
+      wrap.innerHTML = `<div style="color: var(--text-muted); padding: 20px; text-align: center;">Loading audit transactions...</div>`;
+      try {
+        const res = await fetch('/api/audit?limit=100');
+        if (res.ok) {
+          globalAuditList = await res.json();
+          renderGlobalAudit();
+        } else {
+          wrap.innerHTML = `<div style="color: #f87171; padding: 20px; text-align: center;">Unable to load audit ledger from server.</div>`;
+        }
+      } catch (e) {
+        wrap.innerHTML = `<div style="color: var(--text-muted); padding: 20px; text-align: center;">Audit server unreachable (running static demo). Connect to local app.py or tunnel.</div>`;
+      }
+    }
+
+    function renderGlobalAudit() {
+      const wrap = document.getElementById('globalAuditWrap');
+      const q = (document.getElementById('auditFilterInput').value || '').toLowerCase();
+      const filtered = globalAuditList.filter(r => {
+        return (r.person_id && r.person_id.toLowerCase().includes(q)) ||
+               (r.verifier_id && r.verifier_id.toLowerCase().includes(q)) ||
+               (r.profile_url && r.profile_url.toLowerCase().includes(q)) ||
+               (r.notes && r.notes.toLowerCase().includes(q));
+      });
+
+      if (filtered.length === 0) {
+        wrap.innerHTML = `<div style="color: var(--text-muted); padding: 20px; text-align: center;">No audit transactions match filter.</div>`;
+        return;
+      }
+
+      let html = `
+        <table class="candidates-table" style="font-size: 12px; width: 100%;">
+          <thead>
+            <tr>
+              <th style="width: 50px;">ID</th>
+              <th style="width: 140px;">Time (UTC)</th>
+              <th style="width: 120px;">Verifier</th>
+              <th style="width: 110px;">Candidate</th>
+              <th style="width: 170px;">Action & Transition</th>
+              <th>Target URL & Notes</th>
+              <th style="width: 80px;">Rollback</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const r of filtered) {
+        const isRevert = r.action === 'REVERT';
+        const dateStr = r.created_at ? r.created_at.replace('T', ' ').slice(0, 19) : '';
+        html += `
+          <tr>
+            <td style="font-family: var(--font-mono); color: var(--text-muted);">#${r.id}</td>
+            <td style="font-family: var(--font-mono); font-size: 11px;">${dateStr}</td>
+            <td style="font-weight: 600; color: #38bdf8;">👤 ${r.verifier_id || 'anonymous'}</td>
+            <td><a href="#" onclick="closeAuditModal(); openCandidateDetail('${r.person_id}'); return false;" style="color: #a78bfa; font-family: var(--font-mono); font-weight: 600;">${r.person_id} ↗</a></td>
+            <td>
+              <span class="audit-badge ${isRevert ? 'revert' : 'verify'}">${r.action}: ${r.previous_status || 'unreviewed'} ➔ ${r.new_status}</span>
+            </td>
+            <td>
+              <div style="font-size: 11px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <a href="${r.profile_url}" target="_blank" style="color: #94a3b8;">${r.profile_url}</a>
+              </div>
+              ${r.notes ? `<div style="color: #cbd5e1; font-style: italic; font-size: 11px; margin-top: 2px;">💬 "${r.notes}"</div>` : ''}
+            </td>
+            <td>
+              ${!isRevert ? `<button class="drawer-verif-btn revert" onclick="revertAction(${r.id}, '${r.person_id}')" style="padding: 2px 6px;">↩ Rollback</button>` : '<span style="color: var(--text-muted); font-size: 11px;">Reverted</span>'}
+            </td>
+          </tr>
+        `;
+      }
+      html += `</tbody></table>`;
+      wrap.innerHTML = html;
     }
 
     function copyUrl(text, btnId) {
